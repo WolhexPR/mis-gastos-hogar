@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Mis Gastos">
+<title>Mis Gastos del Hogar</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="description" content="Controla los gastos del hogar y lee recibos con la cámara. Tus datos se quedan en tu teléfono.">
+
+<script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{
+  --bg:#ffffff; --surface:#ffffff; --text:#111111; --dim:#626262;
+  --border:#dedede; --accent:#d90429; --accent-dark:#98001c; --ink:#111111;
+  --danger:#b00020; --shadow:0 16px 45px rgba(0,0,0,.12); --radius:18px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;font-family:"Avenir Next",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);min-width:320px;padding-bottom:96px}
+button,input,select,textarea{font:inherit}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+main{max-width:960px;margin:0 auto;padding:20px 16px 32px}
+@media(min-width:640px){main{padding:32px 24px}}
+h1{margin:4px 0 0;font-size:26px;letter-spacing:-.02em}
+h2{font-size:18px;margin:0}
+.eyebrow{color:var(--accent);font-size:13px;font-weight:700;margin:0}
+.muted{color:var(--dim);font-size:14px}
+.small{font-size:12px}
+.hidden{display:none!important}
+.file-hidden{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden!important;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;margin:-1px;pointer-events:none}
+.receipt-edge{clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),97% 100%,94% calc(100% - 8px),91% 100%,88% calc(100% - 8px),85% 100%,82% calc(100% - 8px),79% 100%,76% calc(100% - 8px),73% 100%,70% calc(100% - 8px),67% 100%,64% calc(100% - 8px),61% 100%,58% calc(100% - 8px),55% 100%,52% calc(100% - 8px),49% 100%,46% calc(100% - 8px),43% 100%,40% calc(100% - 8px),37% 100%,34% calc(100% - 8px),31% 100%,28% calc(100% - 8px),25% 100%,22% calc(100% - 8px),19% 100%,16% calc(100% - 8px),13% 100%,10% calc(100% - 8px),7% 100%,4% calc(100% - 8px),0 100%)}
+</style>
+</head>
+<body>
+<style>
+.total-card{background:var(--ink);color:#fff;padding:24px 20px 32px;box-shadow:var(--shadow)}
+.total-card .label{color:rgba(255,255,255,.7);font-size:14px;margin:0}
+.total-amount{font-size:40px;font-weight:800;margin:8px 0 0;line-height:1}
+@media(min-width:640px){.total-amount{font-size:48px}}
+.dist-bar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.15);margin-top:24px}
+.dist-bar span{display:block;height:100%}
+.total-meta{display:flex;justify-content:space-between;color:rgba(255,255,255,.7);font-size:14px;margin-top:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;font-weight:700;border-radius:14px;min-height:56px;padding:12px 20px;font-size:16px;width:100%}
+@media(min-width:640px){.btn-auto{width:auto}}
+.btn-red{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(217,4,41,.24)}
+.btn-red:active{transform:translateY(1px)}
+.btn-black{background:var(--ink);color:#fff}
+.btn-outline{background:#fff;color:var(--ink);border:1px solid var(--border)}
+.btn-danger-text{background:none;color:var(--danger);min-height:40px;width:auto;padding:6px 8px;font-size:14px;box-shadow:none}
+.icon-btn{width:48px;height:48px;border-radius:999px;border:0;display:grid;place-items:center;cursor:pointer;flex-shrink:0}
+.icon-btn.black{background:var(--ink);color:#fff}
+.icon-btn.gray{background:var(--border);color:var(--ink)}
+.icon-btn:disabled{opacity:.5}
+.card{background:var(--surface);box-shadow:var(--shadow);padding:20px}
+.field{width:100%;min-height:52px;border:1px solid var(--border);border-radius:12px;background:#fff;padding:0 14px;color:var(--text);outline:none}
+.field:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(217,4,41,.18)}
+textarea.field{padding:10px 14px;min-height:auto}
+label.field-label{display:block;margin-bottom:8px;font-size:14px;font-weight:700}
+label.field-label .req{color:var(--accent);margin-left:2px}
+label.field-label .hint{float:right;font-weight:400;color:var(--dim);font-size:13px}
+.grid2{display:grid;gap:16px}
+@media(min-width:640px){.grid2{grid-template-columns:1fr 1fr}}
+.month-input{min-height:44px;border:1px solid var(--border);border-radius:12px;background:#fff;padding:0 12px;font-weight:600;font-size:14px;max-width:160px}
+.progress{height:8px;background:#eee;border-radius:999px;overflow:hidden;margin-top:12px}
+.progress i{display:block;height:100%;background:var(--accent);width:0%}
+.cat-row{margin-bottom:20px}
+.cat-row:last-child{margin-bottom:0}
+.cat-bar{height:10px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:8px}
+.cat-bar i{display:block;height:100%;border-radius:999px}
+</style>
+<style>
+.purchase{background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.08);padding:16px;margin-bottom:12px}
+.pill{display:inline-block;background:var(--bg);border:1px solid var(--border);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;color:var(--accent)}
+.paper{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,rgba(0,0,0,.06) 32px);background-color:#fff;box-shadow:var(--shadow);padding:32px 20px;text-align:center}
+.empty-title{font-weight:700;margin:0}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--dim);pointer-events:none}
+.search-wrap input{padding-left:44px}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-top:1px solid var(--border);padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px;border:0;border-radius:12px;background:none;color:var(--dim);font-size:12px;font-weight:700;cursor:pointer}
+.nav-btn.active{background:var(--ink);color:#fff}
+#toast{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top));transform:translateX(-50%);z-index:50;background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;max-width:92vw;text-align:center}
+.confirm-box{margin-top:16px;border-top:1px solid var(--border);padding-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.confirm-box .actions{display:flex;gap:8px}
+.confirm-box button{min-height:40px;border-radius:10px;border:0;padding:0 14px;font-weight:700;cursor:pointer}
+.btn-cancel{background:none;color:var(--text)}
+.btn-confirm-del{background:var(--danger);color:#fff}
+.preview-img{width:100%;max-height:224px;object-fit:contain;background:var(--bg);border-radius:12px;margin-top:16px}
+.pulse{animation:pulse 1.5s ease-in-out infinite;background:#f3f3f3;border-radius:12px;padding:12px 16px;margin-top:16px;font-size:14px;font-weight:600}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:20px}
+.link-red{background:none;border:0;color:var(--accent);font-weight:700;font-size:14px;cursor:pointer;padding:0}
+.recent-item{display:flex;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.recent-item:last-child{border-bottom:0}
+.footer-note{text-align:center;color:var(--dim);font-size:13px;padding:8px 0 24px;line-height:1.5}
+</style>
+<div id="toast" class="hidden" role="status"></div>
+<main>
+  <!-- RESUMEN -->
+  <section id="tab-summary">
+    <div class="section-head">
+      <div><p class="eyebrow">Balance del hogar</p><h1>Tu mes, de un vistazo</h1></div>
+      <input type="month" id="monthSummary" class="month-input" aria-label="Seleccionar mes">
+    </div>
+    <div class="total-card receipt-edge">
+      <p class="label" id="totalLabel">Gastado</p>
+      <p class="total-amount mono" id="totalMes">$0.00</p>
+      <div class="dist-bar" id="distBar" aria-label="Distribución por categoría"></div>
+      <div class="total-meta"><span id="countMes">0 compras</span><span class="mono" id="catCount">0 categorías</span></div>
+    </div>
+    <button class="btn btn-red btn-auto" style="margin-top:20px" onclick="goTab('add')">＋ Registrar compra</button>
+    <div style="margin-top:36px;display:grid;gap:32px" id="summaryGrid">
+      <div>
+        <div class="section-head" style="margin-bottom:16px"><h2>Por categoría</h2><span class="muted" id="catMonthLabel"></span></div>
+        <div id="catsBox"></div>
+      </div>
+      <div>
+        <div class="section-head" style="margin-bottom:8px"><h2>Últimas compras</h2><button class="link-red hidden" id="verTodasBtn" onclick="goTab('history')">Ver todas</button></div>
+        <div id="recentBox" style="background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.06);padding:4px 16px"></div>
+      </div>
+    </div>
+  </section>
+  <!-- AÑADIR -->
+  <section id="tab-add" class="hidden" style="max-width:672px;margin:0 auto">
+    <p class="eyebrow">Nueva compra</p>
+    <h1 style="font-size:30px">Del recibo a tus cuentas</h1>
+    <p class="muted">Toma una foto o llena los datos. Siempre podrás revisar todo antes de guardar.</p>
+    <div class="card receipt-edge" style="margin-top:20px;padding-bottom:32px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+        <div><h2 style="font-size:16px">Leer recibo</h2><p class="muted" style="margin:4px 0 0">Detecta fecha, comercio, total y número.</p></div>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="icon-btn black" id="btnCamera" aria-label="Tomar foto del recibo">📷</button>
+          <button type="button" class="icon-btn gray" id="btnGallery" aria-label="Elegir imagen del recibo">🖼️</button>
+        </div>
+      </div>
+      <input type="file" id="fileCamera" accept="image/*" capture="environment" class="file-hidden" tabindex="-1" aria-hidden="true">
+      <input type="file" id="fileGallery" accept="image/*" class="file-hidden" tabindex="-1" aria-hidden="true">
+      <img id="preview" class="preview-img hidden" alt="Vista previa del recibo">
+      <div id="ocrStatus" class="hidden"></div>
+      <div class="progress hidden" id="ocrProgWrap"><i id="ocrBar"></i></div>
+      <p id="scanError" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px;margin-top:12px" role="alert"></p>
+      <details id="ocrDetails" class="hidden" style="margin-top:12px">
+        <summary class="muted" style="cursor:pointer;font-weight:600">Ver texto detectado</summary>
+        <textarea id="ocrText" rows="4" class="field" style="margin-top:8px" placeholder="Texto detectado…"></textarea>
+      </details>
+      <p id="sugerenciaCat" class="hidden" style="margin-top:12px;font-size:14px;font-weight:600;background:#fff1f2;border:1px solid var(--accent);border-radius:12px;padding:10px 12px"></p>
+      <div id="desgloseWrap" class="hidden" style="margin-top:12px">
+        <div class="section-head" style="margin-bottom:8px"><h3 style="margin:0;font-size:16px">Desglose del recibo por categoría</h3></div>
+        <p class="muted" style="margin:0 0 8px">Esto es lo que distinguió la app artículo por artículo. Revísalo: tú confirmas antes de guardar.</p>
+        <div id="desgloseList"></div>
+        <p id="desgloseAviso" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px;margin-top:8px">Pude leer pocas líneas — revisa los montos.</p>
+        <button type="button" id="btnGuardarDesglose" class="btn btn-black" style="margin-top:10px">Guardar como N compras</button>
+        <p class="muted small" style="margin-top:8px">Al guardar el desglose se crea una compra por cada categoría, con la misma fecha, suplidor y número de recibo. Cada una se verá por separado en el Historial y en el CSV.</p>
+      </div>
+    </div>
+    <form id="form" style="margin-top:24px">
+      <div class="grid2">
+        <div><label class="field-label" for="fecha">Fecha<span class="req">*</span></label><input type="date" id="fecha" class="field" required></div>
+        <div><label class="field-label" for="suplidor">Suplidor<span class="req">*</span></label><input id="suplidor" class="field" placeholder="Costco, Sam's, Econo…" list="suplidores" required><datalist id="suplidores"><option>Costco</option><option>Sam's Club</option><option>Econo</option><option>Pueblo</option><option>Amigo</option><option>Walmart</option><option>Farmacia</option><option>Otro</option></datalist></div>
+        <div><label class="field-label" for="categoria">Categoría<span class="req">*</span></label><select id="categoria" class="field"><option>Alimentos</option><option>Proteínas</option><option>Limpieza</option><option>Higiene</option><option>Bebidas</option><option>Hogar</option><option>Otros</option></select></div>
+        <div><label class="field-label" for="producto">Producto<span class="req">*</span></label><input id="producto" class="field" placeholder="Ej. Compra semanal" required></div>
+        <div><label class="field-label" for="cantidad">Cantidad<span class="req">*</span></label><input type="number" id="cantidad" class="field" min="0.01" step="0.01" value="1" required></div>
+        <div><label class="field-label" for="costo">Costo total ($)<span class="req">*</span></label><input type="number" id="costo" class="field mono" min="0" step="0.01" placeholder="0.00" required></div>
+      </div>
+      <div style="margin-top:16px"><label class="field-label" for="recibo">Número de recibo<span class="hint">Opcional</span></label><input id="recibo" class="field mono" placeholder="Ej. 004812"></div>
+      <p id="formError" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px" role="alert"></p>
+      <button type="submit" class="btn btn-red" style="margin-top:20px">✓ Guardar compra</button>
+      <button type="button" class="btn btn-outline" style="margin-top:10px" onclick="limpiar()">Limpiar formulario</button>
+    </form>
+  </section>
+  <!-- HISTORIAL -->
+  <section id="tab-history" class="hidden" style="max-width:768px;margin:0 auto">
+    <div class="section-head">
+      <div><p class="eyebrow">Archivo mensual</p><h1 style="font-size:30px">Historial</h1></div>
+      <input type="month" id="monthHistory" class="month-input" aria-label="Seleccionar mes">
+    </div>
+    <div class="search-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input type="search" id="buscar" class="field" placeholder="Buscar suplidor, producto o recibo" aria-label="Buscar en el historial">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-outline" style="min-height:44px;font-size:14px" onclick="exportCSV()">Exportar CSV</button>
+      <button class="btn btn-outline" style="min-height:44px;font-size:14px;color:var(--danger);border-color:var(--danger)" onclick="askBorrarTodo()">Borrar todo</button>
+    </div>
+    <div id="resetConfirm" class="confirm-box hidden" role="alertdialog" aria-labelledby="resetTitle" aria-describedby="resetDetail" style="background:var(--surface);box-shadow:0 8px 30px rgba(0,0,0,.08);padding:16px;margin-top:12px;border-top:0">
+      <div><strong id="resetTitle">¿Borrar todos los gastos?</strong><p id="resetDetail" class="muted" style="margin:4px 0 0">Se eliminarán las compras de todos los meses. Esta acción no se puede deshacer.</p></div>
+      <span class="actions"><button class="btn-cancel" onclick="cancelBorrarTodo()">Cancelar</button><button class="btn-confirm-del" onclick="confirmBorrarTodo()">Sí, borrar todo</button></span>
+    </div>
+    <div id="lista" style="margin-top:20px"></div>
+    <div id="historialVacio"></div>
+  </section>
+  <p class="footer-note">Tus datos se guardan en este teléfono (almacenamiento del navegador).<br>Sin servidor, sin cuenta. Haz una copia con Exportar CSV cuando quieras.</p>
+</main>
+<nav class="bottom" aria-label="Navegación principal"><div class="inner">
+  <button class="nav-btn active" id="nav-summary" onclick="goTab('summary')"><span style="font-size:20px">⌂</span>Resumen</button>
+  <button class="nav-btn" id="nav-add" onclick="goTab('add')"><span style="font-size:20px">＋</span>Añadir</button>
+  <button class="nav-btn" id="nav-history" onclick="goTab('history')"><span style="font-size:20px">☰</span>Historial</button>
+</div></nav>
+<script>
+const KEY='gastos_hogar_v1';
+const CAT_COLORS={"Alimentos":"#D90429","Proteínas":"#111111","Limpieza":"#F04B5A","Higiene":"#626262","Bebidas":"#98001C","Hogar":"#A9A9A9","Otros":"#5B0010"};
+const COLOR_LIST=["#D90429","#111111","#F04B5A","#626262","#98001C","#A9A9A9","#5B0010"];
+let data=[]; try{ data=JSON.parse(localStorage.getItem(KEY)||'[]'); if(!Array.isArray(data)) data=[]; data=data.filter(x=>x && typeof x==='object' && x.fecha && isFinite(Number(x.costo))); }catch(e){ data=[]; }
+let deleteId=null;
+const $=id=>document.getElementById(id);
+const fmt=n=>'$'+Number(n||0).toFixed(2);
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); return true; }catch(e){ toast('No se pudo guardar: almacenamiento lleno o bloqueado en este teléfono'); return false; } }
+function toast(msg){ const t=$('toast'); t.textContent='✓ '+msg; t.classList.remove('hidden'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.add('hidden'),2600); }
+function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function localToday(){ const d=new Date(); const off=d.getTimezoneOffset()*60000; return new Date(d.getTime()-off).toISOString().slice(0,10); }
+function currentMonthVal(){ return $('monthSummary').value || localToday().slice(0,7); }
+function formatMonth(mk){ const p=mk.split('-'); return (MESES[parseInt(p[1],10)-1]||'')+' '+p[0]; }
+function formatDate(f){ if(!f) return ''; const p=f.split('-'); return (parseInt(p[2],10)||'')+' '+(MESES[parseInt(p[1],10)-1]||'').slice(0,3).toLowerCase()+' '+p[0]; }
+function colorFor(cat,idx){ return CAT_COLORS[cat]||COLOR_LIST[idx%COLOR_LIST.length]; }
+function setMonth(mk){ $('monthSummary').value=mk; $('monthHistory').value=mk; }
+function goTab(tab){
+  ['summary','add','history'].forEach(name=>{
+    $('tab-'+name).classList.toggle('hidden', name!==tab);
+    $('nav-'+name).classList.toggle('active', name===tab);
+  });
+  window.scrollTo({top:0});
+  if(tab!=='add'){ deleteId=null; }
+  render();
+}
+</script>
+<script>
+function render(){
+  const mk=currentMonthVal();
+  const filtered=data.filter(x=>(x.fecha||'').slice(0,7)===mk).sort((a,b)=>(b.fecha+String(b.id)).localeCompare(a.fecha+String(a.id)));
+  const total=filtered.reduce((s,x)=>s+Number(x.costo||0),0);
+  $('totalLabel').textContent='Gastado en '+formatMonth(mk);
+  $('totalMes').textContent=fmt(total);
+  $('countMes').textContent=filtered.length+(filtered.length===1?' compra':' compras');
+  $('catMonthLabel').textContent=formatMonth(mk);
+  const byCat={}; filtered.forEach(x=>{ byCat[x.categoria]=(byCat[x.categoria]||0)+Number(x.costo||0); });
+  const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  $('catCount').textContent=cats.length+(cats.length===1?' categoría':' categorías');
+  $('distBar').innerHTML = total>0 ? cats.map(([c,v],i)=>'<span style="width:'+(v/total*100)+'%;background:'+colorFor(c,i)+'" title="'+esc(c)+': '+fmt(v)+'"></span>').join('') : '<span style="width:100%;background:rgba(255,255,255,.15)"></span>';
+  $('catsBox').innerHTML = cats.length ? cats.map(([c,v],i)=>{
+    const pct= total? Math.max(5, Math.round(v/total*100)):0;
+    return '<div class="cat-row"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><strong>'+esc(c)+'</strong><span class="mono" style="font-size:14px">'+fmt(v)+'</span></div><div class="cat-bar"><i style="width:'+pct+'%;background:'+colorFor(c,i)+'"></i></div></div>';
+  }).join('') : '<div class="paper"><p class="empty-title">Aún no hay gastos este mes</p><p class="muted">Registra tu primera compra para ver el desglose.</p><button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="goTab(\'add\')">Añadir compra</button></div>';
+  // Últimas compras
+  const recent=filtered.slice(0,3);
+  $('verTodasBtn').classList.toggle('hidden', filtered.length<=3);
+  $('recentBox').innerHTML = recent.length ? recent.map(x=>
+    '<div class="recent-item"><div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.producto)+'</div><div class="muted small">'+esc(x.suplidor)+' · '+formatDate(x.fecha)+'</div></div><div style="text-align:right;flex-shrink:0"><div class="mono" style="font-weight:700">'+fmt(x.costo)+'</div><div class="small" style="color:var(--accent)">'+esc(x.categoria)+'</div></div></div>'
+  ).join('') : '<p class="muted" style="text-align:center;padding:24px 0">Tus compras aparecerán aquí.</p>';
+  renderHistory(filtered);
+}
+function renderHistory(filtered){
+  const q=($('buscar').value||'').trim().toLowerCase();
+  const list=filtered.filter(x=>!q || (x.producto+' '+x.suplidor+' '+x.categoria+' '+(x.recibo||'')).toLowerCase().includes(q));
+  $('historialVacio').innerHTML='';
+  if(!list.length){
+    $('lista').innerHTML='';
+    $('historialVacio').innerHTML='<div class="paper"><p class="empty-title">'+(q?'No encontramos coincidencias':'No hay compras registradas')+'</p><p class="muted">'+(q?'Prueba con otro término.':'Todavía no hay compras en '+formatMonth(currentMonthVal())+'.')+'</p>'+(q?'<button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="document.getElementById(\'buscar\').value=\'\';render()">Limpiar búsqueda</button>':'<button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="goTab(\'add\')">Añadir compra</button>')+'</div>';
+    return;
+  }
+  $('lista').innerHTML=list.map(x=>{
+    let h='<article class="purchase"><div style="display:flex;justify-content:space-between;gap:16px"><div style="min-width:0"><p style="font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.producto)+'</p><p class="muted" style="margin:4px 0 0;font-size:14px">'+esc(x.suplidor)+' · '+formatDate(x.fecha)+'</p><div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="pill">'+esc(x.categoria)+'</span><span class="small muted">Cant. '+esc(x.cantidad)+'</span>'+(x.recibo?'<span class="small mono muted">Recibo '+esc(x.recibo)+'</span>':'')+'</div></div><div style="text-align:right;flex-shrink:0"><p class="mono" style="font-size:18px;font-weight:700;margin:0">'+fmt(x.costo)+'</p><button class="btn-danger-text" onclick="askDelete(\''+x.id+'\')">🗑 Eliminar</button></div></div>';
+    if(deleteId===x.id){
+      h+='<div class="confirm-box"><span style="font-weight:600;font-size:14px">¿Eliminar esta compra?</span><span class="actions"><button class="btn-cancel" onclick="cancelDelete()">Cancelar</button><button class="btn-confirm-del" onclick="confirmDelete(\''+x.id+'\')">Sí, eliminar</button></span></div>';
+    }
+    h+='</article>';
+    return h;
+  }).join('');
+}
+function askDelete(id){ deleteId=id; render(); }
+function cancelDelete(){ deleteId=null; render(); }
+function confirmDelete(id){ data=data.filter(x=>String(x.id)!==String(id)); deleteId=null; if(save()) toast('Compra eliminada'); render(); }
+</script>
+<script>
+function limpiar(){ window._lastDesglose=null; const dw=$('desgloseWrap'); if(dw) dw.classList.add('hidden'); const sg=$('sugerenciaCat'); if(sg){sg.classList.add('hidden'); sg.textContent='';} $('form').reset(); $('fecha').value=localToday(); $('cantidad').value=1; $('formError').classList.add('hidden'); const pv=$('preview'); if(window._previewUrl){ URL.revokeObjectURL(window._previewUrl); window._previewUrl=null; } pv.removeAttribute('src'); pv.classList.add('hidden'); $('ocrText').value=''; $('ocrDetails').classList.add('hidden'); const st=$('ocrStatus'); st.classList.add('hidden'); st.className='hidden'; st.removeAttribute('style'); $('ocrProgWrap').classList.add('hidden'); $('scanError').classList.add('hidden'); }
+function askBorrarTodo(){
+  if(!data.length) return toast('No hay compras registradas');
+  $('resetConfirm').classList.remove('hidden');
+  $('resetTitle').focus?.();
+}
+function cancelBorrarTodo(){ $('resetConfirm').classList.add('hidden'); }
+function confirmBorrarTodo(){
+  data=[]; deleteId=null;
+  const buscador=$('buscar'); if(buscador) buscador.value='';
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  save(); $('resetConfirm').classList.add('hidden'); render(); toast('Todos los gastos fueron borrados');
+}
+function exportCSV(){
+  if(!data.length){ toast('No hay compras para exportar todavía'); return; }
+  const rows=[['Fecha','Suplidor','Categoría','Producto','Cantidad','Costo','Recibo']];
+  data.slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(x=>rows.push([x.fecha,x.suplidor,x.categoria,x.producto,x.cantidad,x.costo,x.recibo||'']));
+  const csv=rows.map(r=>r.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})); a.download='mis-gastos-hogar.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('CSV exportado');
+}
+$('form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const item={ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    fecha:$('fecha').value, suplidor:$('suplidor').value.trim(), categoria:$('categoria').value,
+    producto:$('producto').value.trim(), cantidad:Number($('cantidad').value||1), costo:Number($('costo').value||0),
+    recibo:$('recibo').value.trim() };
+  const err=$('formError');
+  if(!item.fecha||!item.suplidor||!item.producto||!(item.costo>0)||!(item.cantidad>0)){ err.textContent='Completa fecha, suplidor y producto, con cantidad y costo total mayores de $0.'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  data.unshift(item); if(!save()){ data.shift(); return; } setMonth(item.fecha.slice(0,7)); limpiar(); goTab('summary'); toast('Compra guardada');
+});
+$('monthSummary').addEventListener('change', function(){ setMonth(this.value||localToday().slice(0,7)); deleteId=null; render(); });
+$('monthHistory').addEventListener('change', function(){ setMonth(this.value||localToday().slice(0,7)); deleteId=null; render(); });
+$('buscar').addEventListener('input', render);
+</script>
+<script>
+/* OCR con Tesseract.js */
+/* === Categorización automática (módulo probado 14/14) === */
+/* Categorización automática de recibos — Mis Gastos del Hogar
+ * Módulo sin DOM: se puede probar con node y pegarse tal cual en index.html
+ * (antes del cierre del bloque principal). Categorías = las del selector
+ * de la app: Alimentos, Proteínas, Limpieza, Higiene, Bebidas, Hogar, Otros.
+ */
+
+/* Normaliza texto de OCR: minúsculas, sin acentos, espacios colapsados.
+ * El OCR a veces trae acentos y a veces no; el diccionario va sin acentos. */
+function normCat(s){
+  return (s||'').toLowerCase()
+    .replace(/[áàäâ]/g,'a').replace(/[éèëê]/g,'e').replace(/[íìïî]/g,'i')
+    .replace(/[óòöô]/g,'o').replace(/[úùüû]/g,'u').replace(/ñ/g,'n')
+    .replace(/[^a-z0-9\/\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+/* Diccionario: fragmentos regex (sobre texto ya normalizado).
+ * \b al inicio evita falsos positivos dentro de otras palabras.
+ * Las frases van primero en cada lista (p. ej. "papel toalla" antes de "toalla"). */
+var CAT_DICT = {
+'Alimentos': [
+  '\\bpan\\b','\\bleche\\b','\\bhuevo','\\barroz\\b','\\bhabichuela','\\bfrijol',
+  '\\bpasta\\b','\\bharina\\b','\\bazucar\\b','\\bsal\\b','\\baceite\\b',
+  '\\bmant\\b', // manteca, mantequilla, mantecado
+  '\\bqueso\\b','\\byogur','\\bcereal\\b','\\bavena\\b','\\bgalleta','\\btortilla',
+  '\\bvegetal','\\bverdura','\\blechuga\\b','\\btomate','\\bcebolla','\\bpapa\\b',
+  '\\bplatano','\\byuca\\b','\\bmalanga\\b','\\bname\\b','\\bbatata\\b',
+  '\\bzanahoria\\b','\\bbrocoli\\b','\\bmaiz\\b','\\belote\\b','\\blenteja',
+  '\\bgarbanzo','\\bsopa\\b','\\bsazon\\b','\\badobo\\b','\\bsofrito\\b',
+  '\\bculantro\\b','\\brecao\\b','\\bcilantro\\b','\\bperejil\\b','\\bajo\\b',
+  '\\bpimienta\\b','\\boreganos\\b','\\boregano\\b','\\bcomino\\b',
+  '\\bvinagre\\b','\\bketchup\\b','\\bmostaza\\b','\\bmayonesa\\b','\\bsalsa\\b',
+  '\\batun\\b','\\bsardina','\\bchicharro','\\bjamon\\b','\\bsalchicha',
+  '\\bpepperoni\\b','\\btocino\\b','\\bbacon\\b','\\bchorizo\\b','\\blonganiza\\b',
+  '\\bembutido','\\bsnack','\\bpapita','\\bchip\\b','\\bpopcorn\\b','\\bpalomita',
+  '\\bchocolate\\b','\\bdulce\\b','\\bcaramelo','\\bmenta\\b','\\bchicle\\b',
+  '\\bhelado\\b','\\bflan\\b','\\bbizcocho\\b','\\bdeli\\b','\\bpanaderia\\b',
+  '\\bfruta','\\bmanzana','\\bguineo','\\bchina\\b','\\bnaranja','\\btoronja',
+  '\\blimon\\b','\\bpina\\b','\\bmango\\b','\\bpapaya\\b','\\baguacate\\b',
+  '\\bmelon\\b','\\bsandia\\b','\\buva\\b','\\bfresa','\\bgranola\\b','\\bmiel\\b',
+  '\\bmermelada\\b','\\bjalea\\b','\\bmani\\b','\\bnuez','\\balmendra',
+  '\\bpasa\\b','\\bdatil\\b','\\bcoco\\b','\\bpure\\b','\\bcompota\\b',
+  '\\bformula\\b','\\bensure\\b','\\bpediasure\\b',
+  '\\blch\\b','\\bhvo','\\bqso\\b','\\bgllta','\\bslch','\\bchich','\\bfrut',
+  '\\bverd','\\bveg\\b','\\bcrl\\b','\\bchoc'
+],
+'Proteínas': [
+  '\\bpollo\\b','\\bpechuga\\b','\\bmuslo','\\bcadera','\\bpavo\\b',
+  '\\bcarne\\b','\\bres\\b','\\bbistec\\b','\\bfilete','\\bchurrasco\\b',
+  '\\bcerdo\\b','\\blechon\\b','\\bcostilla','\\bchuleta','\\bcordero\\b',
+  '\\bcabra\\b','\\bconejo\\b','\\bpescado\\b','\\btilapia\\b','\\bmero\\b',
+  '\\bchillo\\b','\\bdorado\\b','\\bsalmon\\b','\\bcamaron','\\blangosta\\b',
+  '\\bpulpo\\b','\\bcalamar','\\bmarisco','\\bcangrejo\\b','\\bcarniceria\\b',
+  '\\bpllo\\b','\\bpchga','\\bcrn\\b','\\bbstc','\\bchlt','\\bpsc\\b',
+  '\\bcamar','\\bmarisc','\\bcostill','\\bpav\\b'
+],
+'Limpieza': [
+  'papel toalla','de fregar','bolsa de basura',
+  '\\bdeterg','\\bsuav','\\bclor','\\bblanquea','\\bdesinf','\\blysol\\b',
+  '\\bfabuloso\\b','\\bajax\\b','\\bfreg','\\bestropajo\\b','\\besponja',
+  '\\bbrillo\\b','\\bescoba','\\bmapo\\b','\\btrapea','\\bcubo\\b',
+  '\\brecogedor\\b','\\bplumero\\b','\\bguante','\\bdesengras','\\blimpia',
+  '\\bmuliuso\\b','\\bmultiuso\\b','\\binsecticida\\b','\\braid\\b',
+  '\\bcera\\b','\\bdsinf'
+],
+'Higiene': [
+  'pasta dental','cepillo dental','hilo dental','enjuague bucal',
+  'papel higienico','toalla sanitaria','toallita','crema de afeitar',
+  'agua oxigenada','protector solar','jabon de bano',
+  '\\bjabon(?!\\s+de\\s+fregar)','\\bchamp','\\bacondicionador\\b',
+  '\\bdesodorante\\b','\\bcepillo\\b','\\bpanal','\\bwipe','\\bcrema\\b',
+  '\\blocion\\b','\\bbloquea','\\bafeita','\\brasura','\\bmaquinilla\\b',
+  '\\bcolonia\\b','\\bperfume\\b','\\balgodon\\b','\\bcurita','\\bbandita',
+  '\\balcohol\\b','\\bvitamina','\\bmedica','\\bpastilla','\\btylenol\\b',
+  '\\badvil\\b','\\bibuprofeno\\b','\\bacetaminofen\\b','\\bzyrtec\\b',
+  '\\bclaritin\\b','\\bpepto\\b','\\btums\\b','\\bvicks\\b','\\bneosporin\\b',
+  '\\bshampoo\\b','\\bpnl\\b','\\bhigien','\\benjuag'
+],
+'Bebidas': [
+  '\\bagua\\b','\\bsoda\\b','\\brefresco\\b','\\bcoca\\b','\\bpepsi\\b',
+  '\\bsprite\\b','\\bmalta\\b','\\bcerveza\\b','\\bmedalla\\b','\\bvino\\b',
+  '\\bron\\b','\\bwhisky\\b','\\bvodka\\b','\\bjugo\\b','\\bnectar\\b',
+  '\\blimonada\\b','\\bcafe\\b','\\bcocoa\\b','\\bgatorade\\b','\\bpowerade\\b',
+  '\\benergy\\b','\\bmonster\\b','\\bred bull\\b','\\bsangria\\b','\\bsidra\\b',
+  '\\bchampana\\b','\\bsda\\b','\\brfrsco','\\bcerv','\\bgtrad','\\bjug\\b'
+],
+'Hogar': [
+  '(?<!papel )\\btoalla\\b', // toalla de baño; "papel toalla" es Limpieza
+  'plato desechable','vaso desechable','cubierto desechable',
+  'papel aluminio','cinta adhesiva',
+  '\\bservilleta','\\bdesech','\\baluminio\\b','\\bplastico\\b','\\bziploc\\b',
+  '\\bvela','\\bfosforo','\\bbombilla','\\bbateria','\\bpila\\b',
+  '\\bextension\\b','\\btape\\b','\\bpegamento\\b','\\bclavo\\b','\\btornillo',
+  '\\bherramienta','\\bdestornillador\\b','\\bmartillo\\b','\\bpintura\\b',
+  '\\bbrocha\\b','\\brodillo\\b','\\blija\\b','\\bcortina','\\bsabana',
+  '\\balmohada\\b','\\balfombra\\b','\\bplanta\\b','\\bmaceta\\b','\\btierra\\b',
+  '\\babono\\b','\\bambienta','\\baromati','\\bfebreze\\b','\\bglade\\b',
+  '\\bdecoracion\\b','\\bmarco\\b','\\bcuadro\\b','\\bservill','\\bvel\\b'
+]
+};
+/* Compilar una vez */
+var CAT_RX = {};
+Object.keys(CAT_DICT).forEach(function(cat){
+  CAT_RX[cat] = CAT_DICT[cat].map(function(src){ return new RegExp(src,'gi'); });
+});
+var CAT_ORDER = ['Alimentos','Proteínas','Limpieza','Higiene','Bebidas','Hogar'];
+
+/* Cuenta coincidencias por categoría en un texto */
+function contarHits(texto){
+  var t = normCat(texto), hits = {}, total = 0, cat, i, m;
+  for(var c=0;c<CAT_ORDER.length;c++){
+    cat = CAT_ORDER[c]; var n = 0; var rxs = CAT_RX[cat];
+    for(i=0;i<rxs.length;i++){ rxs[i].lastIndex = 0; m = t.match(rxs[i]); if(m) n += m.length; }
+    if(n>0){ hits[cat]=n; total+=n; }
+  }
+  return {hits:hits, total:total};
+}
+
+/* NIVEL 1 — sugerencia por recibo completo.
+ * Devuelve {categoria} o {categoria:null, motivo:'mixto'|'sin coincidencias', detalle} */
+function sugerirCategoria(texto){
+  var r = contarHits(texto);
+  var cats = Object.keys(r.hits).sort(function(a,b){ return r.hits[b]-r.hits[a]; });
+  if(!cats.length) return {categoria:null, motivo:'sin coincidencias', detalle:{}};
+  var top = cats[0], h = r.hits[top];
+  if(h>=2 && h/r.total>=0.6) return {categoria:top, confianza:'alta', detalle:r.hits};
+  if(cats.length===1 && h>=1) return {categoria:top, confianza:'media', detalle:r.hits};
+  return {categoria:null, motivo:'mixto', detalle:r.hits, top:top};
+}
+
+/* NIVEL 2 — desglose línea por línea.
+ * Líneas de encabezado/totales/impuestos/pago se ignoran.
+ * Precio al final de la línea: "DESCRIPCION 4.28" o "2/3.00". */
+var SKIP_LINE = /sub\s*total|^total\b|ivu\b|tax\b|impuesto|cambio|efectivo|visa|master\s*card|debito|credito|gracias|thank|bienvenido|telefono|\btel\b|direccion|horario|cajero|transaccion|\border\b|articulo|cantidad|descripcion/i;
+function extraerPrecio(linea){
+  var m = linea.match(/(\d+)\s*\/\s*(\d+\.\d{2})\s*$/);
+  if(m) return parseFloat(m[2]);
+  m = linea.match(/(\d+\.\d{2})\s*$/);
+  if(m) return parseFloat(m[1]);
+  return null;
+}
+function categorizarLinea(desc){
+  var r = contarHits(desc);
+  var cats = Object.keys(r.hits).sort(function(a,b){
+    if(r.hits[b]!==r.hits[a]) return r.hits[b]-r.hits[a];
+    return CAT_ORDER.indexOf(a)-CAT_ORDER.indexOf(b); // desempate: orden fijo
+  });
+  return cats.length ? cats[0] : 'Otros';
+}
+function desglosarRecibo(texto){
+  var lines = (texto||'').split(/\n/).map(function(s){ return s.trim(); }).filter(Boolean);
+  var porCat = {}, lineas = 0, sinPrecio = 0;
+  lines.forEach(function(raw){
+    if(SKIP_LINE.test(raw)) return;
+    var precio = extraerPrecio(raw);
+    if(precio===null){ sinPrecio++; return; }
+    var desc = raw.replace(/(\d+\s*\/\s*)?(\d+\.\d{2})\s*$/,'').trim();
+    if(desc.length<2) return;
+    var cat = categorizarLinea(desc);
+    porCat[cat] = Math.round(((porCat[cat]||0)+precio)*100)/100;
+    lineas++;
+  });
+  return {porCat:porCat, lineas:lineas, sinPrecio:sinPrecio};
+}
+
+/* Export para node (pruebas); en el navegador se ignora */
+if(typeof module!=='undefined' && module.exports){
+  module.exports = {normCat:normCat, sugerirCategoria:sugerirCategoria,
+    desglosarRecibo:desglosarRecibo, contarHits:contarHits, CAT_ORDER:CAT_ORDER};
+}
+
+/* === Fin módulo categorización === */
+function parseReceipt(text){
+  const t=text||''; const lines=t.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  let fecha=''; const m1=t.match(/(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})|(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
+  if(m1){ let raw=m1[0].replace(/\//g,'-'); const p=raw.split('-');
+    if(p[0].length===4) fecha=p[0]+'-'+p[1].padStart(2,'0')+'-'+p[2].padStart(2,'0');
+    else { let y=p[2]; if(y.length===2) y='20'+y; fecha=y+'-'+p[0].padStart(2,'0')+'-'+p[1].padStart(2,'0'); } }
+  let costo=0; const money=[]; let mm; const re=/\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})|\d+\.\d{2})/g;
+  while((mm=re.exec(t))!==null){ money.push(parseFloat(mm[1].replace(/,/g,''))); }
+  const totalLine=lines.find(l=>/total/i.test(l) && !/sub\s*total/i.test(l)) || lines.find(l=>/total/i.test(l)); let fromTotal=0;
+  if(totalLine){ const tm=totalLine.match(/(\d+\.\d{2})/); if(tm) fromTotal=parseFloat(tm[1]); }
+  costo= fromTotal || (money.length? Math.max.apply(null,money):0);
+  const known=['costco','sam','econo','pueblo','walmart','amigo','selectos','ralph','walgreens','cvs'];
+  let suplidor=lines.find(l=>known.some(k=>l.toLowerCase().includes(k))) || lines[0] || '';
+  suplidor=suplidor.replace(/[^a-zA-ZáéíóúñÑ\s'\.]/g,'').trim().slice(0,40);
+  if(/sam/i.test(suplidor)) suplidor="Sam's Club"; else if(/costco/i.test(suplidor)) suplidor='Costco'; else if(/econo/i.test(suplidor)) suplidor='Econo'; else if(/walmart/i.test(suplidor)) suplidor='Walmart';
+  let recibo=''; const rm=t.match(/(?:recibo|receipt|orden|order|transacci[oó]n|#)\s*[:#]?\s*([A-Z0-9\-]{4,})/i); if(rm) recibo=rm[1];
+  return {fecha:fecha, suplidor:suplidor, costo:costo, recibo:recibo};
+}
+let ocrBusy=false;
+function setOcrButtons(disabled){ const b1=$('btnCamera'), b2=$('btnGallery'); if(b1) b1.disabled=disabled; if(b2) b2.disabled=disabled; }
+function isHeic(file){
+  const n=(file.name||'').toLowerCase(), t=(file.type||'').toLowerCase();
+  return t.includes('heic')||t.includes('heif')||n.endsWith('.heic')||n.endsWith('.heif');
+}
+// Downscale big phone photos before OCR: full-size shots (12-48 MP) make
+// Tesseract hang or crash on phones. Max side 1800px is plenty for receipts.
+function prepareForOCR(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=function(){
+      try{
+        const max=1800, scale=Math.min(1, max/Math.max(img.naturalWidth, img.naturalHeight));
+        if(scale>=1 && (file.type==='image/jpeg'||file.type==='image/png')){ URL.revokeObjectURL(url); resolve(file); return; }
+        const c=document.createElement('canvas');
+        c.width=Math.max(1,Math.round(img.naturalWidth*scale));
+        c.height=Math.max(1,Math.round(img.naturalHeight*scale));
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function(b){ b?resolve(b):resolve(file); },'image/jpeg',0.88);
+      }catch(e){ URL.revokeObjectURL(url); resolve(file); }
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); reject(new Error('decode')); };
+    img.src=url;
+  });
+}
+let tesseractLoadPromise=null;
+function loadTesseractOnce(){
+  if(typeof Tesseract!=='undefined') return Promise.resolve(true);
+  if(tesseractLoadPromise) return tesseractLoadPromise;
+  tesseractLoadPromise=new Promise(function(resolve){
+    let done=false;
+    function finish(ok){ if(done) return; done=true; resolve(!!ok && typeof Tesseract!=='undefined'); }
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.async=true;
+    s.onload=function(){ finish(true); };
+    s.onerror=function(){ tesseractLoadPromise=null; finish(false); };
+    document.head.appendChild(s);
+    const waitMs=(typeof window!=='undefined' && window.__OCR_LOAD_TIMEOUT_MS) ? window.__OCR_LOAD_TIMEOUT_MS : 20000;
+    setTimeout(function(){ if(typeof Tesseract==='undefined'){ tesseractLoadPromise=null; finish(false); } else finish(true); }, waitMs);
+  });
+  return tesseractLoadPromise;
+}
+async function handleFile(file){
+  if(!file) return;
+  const status=$('ocrStatus'), progWrap=$('ocrProgWrap'), bar=$('ocrBar'), err=$('scanError');
+  if(ocrBusy){ err.textContent='Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  if(file.size > 20*1024*1024){
+    err.textContent='La foto es demasiado grande (más de 20 MB). Toma la foto de nuevo o elige una más pequeña.';
+    err.classList.remove('hidden'); return;
+  }
+  ocrBusy=true; setOcrButtons(true);
+  status.classList.remove('hidden'); status.className='pulse'; status.removeAttribute('style');
+  status.textContent='Leyendo el recibo…';
+  progWrap.classList.remove('hidden'); bar.style.width='5%';
+  const prev=$('preview');
+  if(window._previewUrl) URL.revokeObjectURL(window._previewUrl);
+  window._previewUrl=URL.createObjectURL(file); prev.src=window._previewUrl; prev.classList.remove('hidden');
+  prev.onerror=function(){ prev.classList.add('hidden'); };
+  try{
+    if(typeof Tesseract==='undefined'){
+      status.textContent='Cargando el lector de recibos\u2026 (necesita internet la primera vez)';
+      await loadTesseractOnce();
+    }
+    if(typeof Tesseract==='undefined'){
+      throw new Error('lector no cargado: se necesita internet la primera vez que se usa el lector de recibos. Conéctate, recarga la página e inténtalo de nuevo.');
+    }
+    let input=file;
+    try{ input=await prepareForOCR(file); }
+    catch(decodeErr){
+      if(isHeic(file)) throw new Error('esta foto está en formato HEIC de iPhone y el navegador no la puede leer. En el iPhone: Ajustes > Cámara > Formatos > "Más compatible", o comparte la foto como JPG y elígela desde la galería.');
+      throw new Error('no se pudo abrir esa imagen. Prueba con otra foto del recibo.');
+    }
+    status.textContent='Leyendo el recibo… (la primera vez tarda más)';
+    const res=await Tesseract.recognize(input,'eng+spa',{ logger: function(m){ if(m.status==='recognizing text') bar.style.width=Math.round(5+m.progress*95)+'%'; }});
+    const text=(res.data && res.data.text)||'';
+    $('ocrText').value=text; $('ocrDetails').classList.remove('hidden');
+    const p=parseReceipt(text);
+    // NIVEL 1: sugerir categoría del recibo completo (el usuario confirma)
+    try{
+      const sug=sugerirCategoria(text);
+      const sg=$('sugerenciaCat');
+      if(sug.categoria){
+        $('categoria').value=sug.categoria;
+        if(sg){ sg.textContent='Categoría sugerida: '+sug.categoria+' — revísala en el formulario y confírmala con un toque antes de guardar.'; sg.classList.remove('hidden'); }
+        toast('Categoría sugerida: '+sug.categoria+' — confírmala');
+      } else if(sg){ sg.classList.add('hidden'); }
+    }catch(eCat){}
+    // NIVEL 2: desglose por artículo / por categoría
+    try{
+      const d=desglosarRecibo(text);
+      window._lastDesglose=d;
+      const catsD=Object.keys(d.porCat||{});
+      if(catsD.length>1){
+        const totD=catsD.reduce(function(s,c){return s+d.porCat[c];},0);
+        $('desgloseList').innerHTML=catsD.sort(function(a,b){return d.porCat[b]-d.porCat[a];}).map(function(c){
+          const pct=totD?Math.round(d.porCat[c]/totD*100):0;
+          return '<div class="recent-item"><span><span class="pill">'+esc(c)+'</span> <span class="muted small">'+pct+'%</span></span><b class="mono">'+fmt(d.porCat[c])+'</b></div>';
+        }).join('')+'<div class="recent-item"><span><strong>Total del desglose</strong> <span class="muted small">('+d.lineas+' artículos leídos)</span></span><b class="mono">'+fmt(totD)+'</b></div>';
+        $('btnGuardarDesglose').textContent='Guardar como '+catsD.length+' compras (una por categoría)';
+        const aviso=$('desgloseAviso');
+        if(p.costo && totD < p.costo*0.5){ aviso.classList.remove('hidden'); } else { aviso.classList.add('hidden'); }
+        $('desgloseWrap').classList.remove('hidden');
+      } else if(catsD.length===1){
+        // Una sola categoría: también se enseña el desglose completo
+        const c1=catsD[0];
+        $('desgloseList').innerHTML='<div class="recent-item"><span><span class="pill">'+esc(c1)+'</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div><div class="recent-item"><span><strong>Total del desglose</strong> <span class="muted small">('+d.lineas+' artículos leídos)</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div>';
+        $('btnGuardarDesglose').textContent='Guardar como 1 compra ('+c1+')';
+        $('desgloseAviso').classList.add('hidden');
+        $('desgloseWrap').classList.remove('hidden');
+      } else { $('desgloseWrap').classList.add('hidden'); }
+    }catch(eDes){}
+    if(p.fecha) $('fecha').value=p.fecha;
+    if(p.suplidor) $('suplidor').value=p.suplidor;
+    if(p.costo) $('costo').value=p.costo.toFixed(2);
+    if(p.recibo && !$('recibo').value) $('recibo').value=p.recibo;
+    status.className=''; status.style.cssText='margin-top:12px;font-size:14px;font-weight:600';
+    status.textContent= text.trim() ? '✅ Datos detectados. Revisa y corrige antes de guardar.' : '⚠️ No se detectó texto. Prueba con más luz y el recibo plano, o llena los datos a mano.';
+    progWrap.classList.add('hidden');
+    if(text.trim()) toast('Recibo leído: revisa los datos');
+  }catch(e){
+    status.classList.add('hidden'); status.className='hidden'; progWrap.classList.add('hidden');
+    err.textContent='No pudimos leer el recibo: '+(e && e.message ? e.message : 'prueba con más luz y el recibo plano, o llena los datos a mano.');
+    err.classList.remove('hidden');
+  }finally{
+    ocrBusy=false; setOcrButtons(false);
+  }
+}
+/* Cableado de los botones de escaneo: botón -> input file oculto -> handleFile.
+   input.click() debe ocurrir de forma síncrona dentro del gesto del usuario
+   (el toque); si se espera algo (await) antes, el navegador móvil bloquea
+   el selector de fotos. Esta es la conexión que faltaba: sin estas líneas
+   los botones no hacían absolutamente nada. */
+function openReceiptPicker(inputId){
+  const err=$('scanError');
+  if(ocrBusy){ err.textContent='Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
+  if($('btnCamera').disabled || $('btnGallery').disabled) setOcrButtons(false);
+  const input=$(inputId);
+  if(!input){ err.textContent='No se encontró el selector de fotos. Recarga la página e inténtalo de nuevo.'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  try{ input.value=''; }catch(e){}
+  input.click();
+}
+function onReceiptPicked(e){
+  const input=e.target;
+  const file=input.files && input.files[0];
+  try{ input.value=''; }catch(err){}
+  if(file) handleFile(file);
+}
+// Guardar desglose como N compras (una por categoría, filas normales)
+function guardarDesglose(){
+  const d=window._lastDesglose;
+  if(!d || !d.porCat || !Object.keys(d.porCat).length){ toast('No hay desglose para guardar'); return; }
+  const fecha=$('fecha').value, suplidor=$('suplidor').value.trim(), recibo=$('recibo').value.trim();
+  if(!fecha || !suplidor){ const err=$('formError'); err.textContent='Para guardar el desglose completa fecha y suplidor (la app los detecta del recibo, revísalos).'; err.classList.remove('hidden'); goTab('add'); return; }
+  const catsD=Object.keys(d.porCat);
+  const items=catsD.map(function(c,i){ return { id: Date.now().toString(36)+Math.random().toString(36).slice(2,6)+i, fecha:fecha, suplidor:suplidor, categoria:c, producto:'Varias ('+c+')', cantidad:1, costo:Number(d.porCat[c]||0), recibo:recibo }; }).filter(function(x){return x.costo>0;});
+  if(!items.length){ toast('No hay montos en el desglose'); return; }
+  const prevLen=data.length;
+  items.forEach(function(it){ data.unshift(it); });
+  if(!save()){ data.splice(0, items.length); toast('No se pudo guardar el desglose'); return; }
+  setMonth(fecha.slice(0,7)); limpiar(); goTab('history'); toast('Desglose guardado como '+items.length+' compras');
+}
+const btnGD=$('btnGuardarDesglose'); if(btnGD) btnGD.addEventListener('click', guardarDesglose);
+$('btnCamera').addEventListener('click', function(){ openReceiptPicker('fileCamera'); });
+$('btnGallery').addEventListener('click', function(){ openReceiptPicker('fileGallery'); });
+$('fileCamera').addEventListener('change', onReceiptPicked);
+$('fileGallery').addEventListener('change', onReceiptPicked);
+/* Init */
+(function init(){ const hoy=localToday(); setMonth(hoy.slice(0,7)); $('fecha').value=hoy; render(); })();
+</script>
+<script>
+/* Registro del Service Worker (PWA): solo en https o localhost, como exige
+   el navegador. Si la página se abre como archivo local, la app funciona
+   igual, simplemente sin modo offline ni instalación. */
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function () { /* sin SW: la app sigue funcionando en línea */ });
+  });
+}
+</script>
+</body>
+</html>
