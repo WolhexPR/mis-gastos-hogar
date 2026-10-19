@@ -143,6 +143,17 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
       </div>
       <input type="file" id="fileCamera" accept="image/*" capture="environment" class="file-hidden" tabindex="-1" aria-hidden="true">
       <input type="file" id="fileGallery" accept="image/*" class="file-hidden" tabindex="-1" aria-hidden="true">
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+        <h3 style="margin:0;font-size:16px">📄 Recibo largo: varias fotos</h3>
+        <p class="muted" style="margin:4px 0 12px">Si el recibo no cabe en una foto, tira 2 o 3 fotos del mismo recibo, de arriba a abajo, con un poco de solape entre ellas. La app verifica que sean de la misma tienda, elimina las líneas repetidas del solape y lo combina todo como un solo recibo.</p>
+        <div class="grid2" style="gap:10px">
+          <button type="button" class="btn btn-outline" style="min-height:48px;font-size:14px" id="btnMultiCamera">📷 Varias fotos · cámara</button>
+          <button type="button" class="btn btn-outline" style="min-height:48px;font-size:14px" id="btnMultiGallery">🖼️ Varias fotos · galería</button>
+        </div>
+        <input type="file" id="fileMultiCamera" accept="image/*" capture="environment" multiple class="file-hidden" tabindex="-1" aria-hidden="true">
+        <input type="file" id="fileMultiGallery" accept="image/*" multiple class="file-hidden" tabindex="-1" aria-hidden="true">
+        <div id="multiAviso" class="hidden" style="margin-top:12px;font-size:14px;font-weight:600;background:#fff1f2;border:1px solid var(--accent);border-radius:12px;padding:10px 12px"></div>
+      </div>
       <img id="preview" class="preview-img hidden" alt="Vista previa del recibo">
       <div id="ocrStatus" class="hidden"></div>
       <div class="progress hidden" id="ocrProgWrap"><i id="ocrBar"></i></div>
@@ -280,7 +291,7 @@ function cancelDelete(){ deleteId=null; render(); }
 function confirmDelete(id){ data=data.filter(x=>String(x.id)!==String(id)); deleteId=null; if(save()) toast('Compra eliminada'); render(); }
 </script>
 <script>
-function limpiar(){ window._lastDesglose=null; const dw=$('desgloseWrap'); if(dw) dw.classList.add('hidden'); const sg=$('sugerenciaCat'); if(sg){sg.classList.add('hidden'); sg.textContent='';} $('form').reset(); $('fecha').value=localToday(); $('cantidad').value=1; $('formError').classList.add('hidden'); const pv=$('preview'); if(window._previewUrl){ URL.revokeObjectURL(window._previewUrl); window._previewUrl=null; } pv.removeAttribute('src'); pv.classList.add('hidden'); $('ocrText').value=''; $('ocrDetails').classList.add('hidden'); const st=$('ocrStatus'); st.classList.add('hidden'); st.className='hidden'; st.removeAttribute('style'); $('ocrProgWrap').classList.add('hidden'); $('scanError').classList.add('hidden'); }
+function limpiar(){ window._lastDesglose=null; window._lastMulti=null; if(typeof limpiarMultiAviso==='function') limpiarMultiAviso(); const dw=$('desgloseWrap'); if(dw) dw.classList.add('hidden'); const sg=$('sugerenciaCat'); if(sg){sg.classList.add('hidden'); sg.textContent='';} $('form').reset(); $('fecha').value=localToday(); $('cantidad').value=1; $('formError').classList.add('hidden'); const pv=$('preview'); if(window._previewUrl){ URL.revokeObjectURL(window._previewUrl); window._previewUrl=null; } pv.removeAttribute('src'); pv.classList.add('hidden'); $('ocrText').value=''; $('ocrDetails').classList.add('hidden'); const st=$('ocrStatus'); st.classList.add('hidden'); st.className='hidden'; st.removeAttribute('style'); $('ocrProgWrap').classList.add('hidden'); $('scanError').classList.add('hidden'); }
 function askBorrarTodo(){
   if(!data.length) return toast('No hay compras registradas');
   $('resetConfirm').classList.remove('hidden');
@@ -467,26 +478,36 @@ function categorizarLinea(desc){
   });
   return cats.length ? cats[0] : 'Otros';
 }
-function desglosarRecibo(texto){
+function claveLineaRecibo(desc, precio){
+  var c = normCat(desc).replace(/^\d{1,6}\s+/,'').replace(/\s+/g,' ').trim();
+  return c + '|' + Number(precio).toFixed(2);
+}
+function extraerLineasDetalle(texto){
   var lines = (texto||'').split(/\n/).map(function(s){ return s.trim(); }).filter(Boolean);
-  var porCat = {}, lineas = 0, sinPrecio = 0;
+  var detalle = [], sinPrecio = 0;
   lines.forEach(function(raw){
     if(SKIP_LINE.test(raw)) return;
     var precio = extraerPrecio(raw);
     if(precio===null){ sinPrecio++; return; }
     var desc = raw.replace(/(\d+\s*\/\s*)?(\d+\.\d{2})\s*$/,'').trim();
     if(desc.length<2) return;
-    var cat = categorizarLinea(desc);
-    porCat[cat] = Math.round(((porCat[cat]||0)+precio)*100)/100;
-    lineas++;
+    detalle.push({desc:desc, precio:precio, cat:categorizarLinea(desc), clave:claveLineaRecibo(desc,precio)});
   });
-  return {porCat:porCat, lineas:lineas, sinPrecio:sinPrecio};
+  return {detalle:detalle, sinPrecio:sinPrecio};
+}
+function desglosarRecibo(texto){
+  var ex = extraerLineasDetalle(texto);
+  var porCat = {};
+  ex.detalle.forEach(function(l){
+    porCat[l.cat] = Math.round(((porCat[l.cat]||0)+l.precio)*100)/100;
+  });
+  return {porCat:porCat, lineas:ex.detalle.length, sinPrecio:ex.sinPrecio, detalle:ex.detalle};
 }
 
 /* Export para node (pruebas); en el navegador se ignora */
 if(typeof module!=='undefined' && module.exports){
   module.exports = {normCat:normCat, sugerirCategoria:sugerirCategoria,
-    desglosarRecibo:desglosarRecibo, contarHits:contarHits, CAT_ORDER:CAT_ORDER};
+    desglosarRecibo:desglosarRecibo, extraerLineasDetalle:extraerLineasDetalle, claveLineaRecibo:claveLineaRecibo, contarHits:contarHits, CAT_ORDER:CAT_ORDER};
 }
 
 /* === Fin módulo categorización === */
@@ -508,8 +529,122 @@ function parseReceipt(text){
   let recibo=''; const rm=t.match(/(?:recibo|receipt|orden|order|transacci[oó]n|#)\s*[:#]?\s*([A-Z0-9\-]{4,})/i); if(rm) recibo=rm[1];
   return {fecha:fecha, suplidor:suplidor, costo:costo, recibo:recibo};
 }
+
+function tiendaCanonica(nombre){
+  var t = normCat(nombre || '');
+  var known = ['costco','sams club','econo','pueblo','walmart','selectos','ralph','walgreens','cvs','amigo'];
+  for(var i=0;i<known.length;i++){ if(t.indexOf(known[i])>=0) return known[i]; }
+  if(t.indexOf('sam')>=0) return 'sams club';
+  return t.replace(/\b(wholesale|supercenter|supermercado|supermarket|club|inc|llc)\b/g,'').replace(/\s+/g,' ').trim();
+}
+/* Junta los textos OCR de 2-3 fotos como UN solo recibo.
+ * Primero verifica que parezcan del mismo recibo: nombre de tienda
+ * detectado en cada foto (y numero de recibo, si aparece en mas de una).
+ * Despues elimina las lineas duplicadas ENTRE fotos (el solape):
+ * misma descripcion normalizada + mismo precio = se cuenta una sola vez.
+ * Los duplicados dentro de una misma foto se respetan (pueden ser
+ * dos unidades reales del mismo articulo en el recibo). */
+function combinarRecibos(textos){
+  var lista = (textos||[]).filter(function(t){ return typeof t==='string'; });
+  var parsed = lista.map(function(t){ return parseReceipt(t); });
+  var canonDisplay = {}, canons = [];
+  parsed.forEach(function(p){
+    if(p.suplidor){
+      var c = tiendaCanonica(p.suplidor);
+      if(c && !(c in canonDisplay)){ canonDisplay[c] = p.suplidor; canons.push(c); }
+    }
+  });
+  var tiendasDistintas = false;
+  for(var i=0;i<canons.length && !tiendasDistintas;i++){
+    for(var j=i+1;j<canons.length;j++){
+      var a = canons[i], b = canons[j];
+      if(a!==b && a.indexOf(b)<0 && b.indexOf(a)<0){ tiendasDistintas = true; break; }
+    }
+  }
+  var recibosVistos = [];
+  parsed.forEach(function(p){ var r=(p.recibo||'').toUpperCase(); if(r && recibosVistos.indexOf(r)<0) recibosVistos.push(r); });
+  if(tiendasDistintas){
+    return {ok:false, motivo:'tiendas distintas', tiendas:canons.map(function(c){ return canonDisplay[c]; }), recibos:recibosVistos, numFotos:lista.length};
+  }
+  if(recibosVistos.length>1){
+    return {ok:false, motivo:'números de recibo distintos', tiendas:canons.map(function(c){ return canonDisplay[c]; }), recibos:recibosVistos, numFotos:lista.length};
+  }
+  var vistos = {}, porCat = {}, lineas = 0, duplicadas = 0, sinPrecio = 0;
+  lista.forEach(function(texto, idxFoto){
+    var ex = extraerLineasDetalle(texto);
+    sinPrecio += ex.sinPrecio || 0;
+    var enEstaFoto = {};
+    ex.detalle.forEach(function(l){
+      if(idxFoto>0 && vistos[l.clave]){ duplicadas++; return; }
+      porCat[l.cat] = Math.round(((porCat[l.cat]||0)+l.precio)*100)/100;
+      lineas++; enEstaFoto[l.clave] = true;
+    });
+    Object.keys(enEstaFoto).forEach(function(k){ vistos[k] = true; });
+  });
+  var costoTotalLinea = 0;
+  lista.forEach(function(texto){
+    texto.split(/\n/).forEach(function(l){
+      if(/total/i.test(l) && !/sub\s*total/i.test(l)){ var m = l.match(/(\d+\.\d{2})/); if(m) costoTotalLinea = Math.max(costoTotalLinea, parseFloat(m[1])); }
+    });
+  });
+  var sumaDesglose = Object.keys(porCat).reduce(function(sm,c){ return sm + porCat[c]; }, 0);
+  var costo = costoTotalLinea || Math.round(sumaDesglose*100)/100 || parsed.reduce(function(mx,p){ return Math.max(mx, Number(p.costo||0)); }, 0);
+  function primero(campo){ for(var k=0;k<parsed.length;k++){ if(parsed[k][campo]) return parsed[k][campo]; } return ''; }
+  return {ok:true, numFotos:lista.length, tienda:primero('suplidor'), tiendas:canons.map(function(c){ return canonDisplay[c]; }),
+    fecha:primero('fecha'), suplidor:primero('suplidor'), recibo:primero('recibo'), costo:costo,
+    porCat:porCat, lineas:lineas, sinPrecio:sinPrecio, duplicadas:duplicadas,
+    fotosSinTienda:parsed.filter(function(p){ return !p.suplidor; }).length,
+    textoCombinado:lista.join('\n\n')};
+}
+function limpiarMultiAviso(){ const ma=$('multiAviso'); if(ma){ ma.classList.add('hidden'); ma.innerHTML=''; } }
+function aplicarRecibo(texto, p, d, opciones){
+  opciones = opciones || {};
+  const status = $('ocrStatus'), progWrap = $('ocrProgWrap');
+  window._lastDesglose = d;
+  // NIVEL 1: sugerir categoría del recibo completo (el usuario confirma)
+  try{
+    const sug = sugerirCategoria(texto);
+    const sg = $('sugerenciaCat');
+    if(sug.categoria){
+      $('categoria').value = sug.categoria;
+      if(sg){ sg.textContent = 'Categoría sugerida: '+sug.categoria+' — revísala en el formulario y confírmala con un toque antes de guardar.'; sg.classList.remove('hidden'); }
+      toast('Categoría sugerida: '+sug.categoria+' — confírmala');
+    } else if(sg){ sg.classList.add('hidden'); }
+  }catch(eCat){}
+  // NIVEL 2: desglose por artículo / por categoría
+  try{
+    const catsD = Object.keys(d.porCat || {});
+    if(catsD.length > 1){
+      const totD = catsD.reduce(function(sm,c){ return sm + d.porCat[c]; }, 0);
+      $('desgloseList').innerHTML = catsD.sort(function(a,b){ return d.porCat[b]-d.porCat[a]; }).map(function(c){
+        const pct = totD ? Math.round(d.porCat[c]/totD*100) : 0;
+        return '<div class="recent-item"><span><span class="pill">'+esc(c)+'</span> <span class="muted small">'+pct+'%</span></span><b class="mono">'+fmt(d.porCat[c])+'</b></div>';
+      }).join('') + '<div class="recent-item"><span><strong>Total del desglose</strong> <span class="muted small">('+d.lineas+' artículos leídos)</span></span><b class="mono">'+fmt(totD)+'</b></div>';
+      $('btnGuardarDesglose').textContent = 'Guardar como '+catsD.length+' compras (una por categoría)';
+      const aviso = $('desgloseAviso');
+      if(p.costo && totD < p.costo*0.5){ aviso.classList.remove('hidden'); } else { aviso.classList.add('hidden'); }
+      $('desgloseWrap').classList.remove('hidden');
+    } else if(catsD.length === 1){
+      const c1 = catsD[0];
+      $('desgloseList').innerHTML = '<div class="recent-item"><span><span class="pill">'+esc(c1)+'</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div><div class="recent-item"><span><strong>Total del desglose</strong> <span class="muted small">('+d.lineas+' artículos leídos)</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div>';
+      $('btnGuardarDesglose').textContent = 'Guardar como 1 compra ('+c1+')';
+      $('desgloseAviso').classList.add('hidden');
+      $('desgloseWrap').classList.remove('hidden');
+    } else { $('desgloseWrap').classList.add('hidden'); }
+  }catch(eDes){}
+  if(p.fecha) $('fecha').value = p.fecha;
+  if(p.suplidor) $('suplidor').value = p.suplidor;
+  if(p.costo) $('costo').value = Number(p.costo).toFixed(2);
+  if(p.recibo && !$('recibo').value) $('recibo').value = p.recibo;
+  status.className = ''; status.style.cssText = 'margin-top:12px;font-size:14px;font-weight:600';
+  status.textContent = texto.trim()
+    ? (opciones.estadoFinal || '✅ Datos detectados. Revisa y corrige antes de guardar.')
+    : '⚠️ No se detectó texto. Prueba con más luz y el recibo plano, o llena los datos a mano.';
+  progWrap.classList.add('hidden');
+  if(texto.trim()) toast(opciones.toastFinal || 'Recibo leído: revisa los datos');
+}
 let ocrBusy=false;
-function setOcrButtons(disabled){ const b1=$('btnCamera'), b2=$('btnGallery'); if(b1) b1.disabled=disabled; if(b2) b2.disabled=disabled; }
+function setOcrButtons(disabled){ const b1=$('btnCamera'), b2=$('btnGallery'); if(b1) b1.disabled=disabled; if(b2) b2.disabled=disabled; const b3=$('btnMultiCamera'), b4=$('btnMultiGallery'); if(b3) b3.disabled=disabled; if(b4) b4.disabled=disabled; }
 function isHeic(file){
   const n=(file.name||'').toLowerCase(), t=(file.type||'').toLowerCase();
   return t.includes('heic')||t.includes('heif')||n.endsWith('.heic')||n.endsWith('.heif');
@@ -559,6 +694,7 @@ async function handleFile(file){
   const status=$('ocrStatus'), progWrap=$('ocrProgWrap'), bar=$('ocrBar'), err=$('scanError');
   if(ocrBusy){ err.textContent='Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
   err.classList.add('hidden');
+  limpiarMultiAviso();
   if(file.size > 20*1024*1024){
     err.textContent='La foto es demasiado grande (más de 20 MB). Toma la foto de nuevo o elige una más pequeña.';
     err.classList.remove('hidden'); return;
@@ -590,48 +726,7 @@ async function handleFile(file){
     const text=(res.data && res.data.text)||'';
     $('ocrText').value=text; $('ocrDetails').classList.remove('hidden');
     const p=parseReceipt(text);
-    // NIVEL 1: sugerir categoría del recibo completo (el usuario confirma)
-    try{
-      const sug=sugerirCategoria(text);
-      const sg=$('sugerenciaCat');
-      if(sug.categoria){
-        $('categoria').value=sug.categoria;
-        if(sg){ sg.textContent='Categoría sugerida: '+sug.categoria+' — revísala en el formulario y confírmala con un toque antes de guardar.'; sg.classList.remove('hidden'); }
-        toast('Categoría sugerida: '+sug.categoria+' — confírmala');
-      } else if(sg){ sg.classList.add('hidden'); }
-    }catch(eCat){}
-    // NIVEL 2: desglose por artículo / por categoría
-    try{
-      const d=desglosarRecibo(text);
-      window._lastDesglose=d;
-      const catsD=Object.keys(d.porCat||{});
-      if(catsD.length>1){
-        const totD=catsD.reduce(function(s,c){return s+d.porCat[c];},0);
-        $('desgloseList').innerHTML=catsD.sort(function(a,b){return d.porCat[b]-d.porCat[a];}).map(function(c){
-          const pct=totD?Math.round(d.porCat[c]/totD*100):0;
-          return '<div class="recent-item"><span><span class="pill">'+esc(c)+'</span> <span class="muted small">'+pct+'%</span></span><b class="mono">'+fmt(d.porCat[c])+'</b></div>';
-        }).join('')+'<div class="recent-item"><span><strong>Total del desglose</strong> <span class="muted small">('+d.lineas+' artículos leídos)</span></span><b class="mono">'+fmt(totD)+'</b></div>';
-        $('btnGuardarDesglose').textContent='Guardar como '+catsD.length+' compras (una por categoría)';
-        const aviso=$('desgloseAviso');
-        if(p.costo && totD < p.costo*0.5){ aviso.classList.remove('hidden'); } else { aviso.classList.add('hidden'); }
-        $('desgloseWrap').classList.remove('hidden');
-      } else if(catsD.length===1){
-        // Una sola categoría: también se enseña el desglose completo
-        const c1=catsD[0];
-        $('desgloseList').innerHTML='<div class="recent-item"><span><span class="pill">'+esc(c1)+'</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div><div class="recent-item"><span><strong>Total del desglose</strong> <span class="muted small">('+d.lineas+' artículos leídos)</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div>';
-        $('btnGuardarDesglose').textContent='Guardar como 1 compra ('+c1+')';
-        $('desgloseAviso').classList.add('hidden');
-        $('desgloseWrap').classList.remove('hidden');
-      } else { $('desgloseWrap').classList.add('hidden'); }
-    }catch(eDes){}
-    if(p.fecha) $('fecha').value=p.fecha;
-    if(p.suplidor) $('suplidor').value=p.suplidor;
-    if(p.costo) $('costo').value=p.costo.toFixed(2);
-    if(p.recibo && !$('recibo').value) $('recibo').value=p.recibo;
-    status.className=''; status.style.cssText='margin-top:12px;font-size:14px;font-weight:600';
-    status.textContent= text.trim() ? '✅ Datos detectados. Revisa y corrige antes de guardar.' : '⚠️ No se detectó texto. Prueba con más luz y el recibo plano, o llena los datos a mano.';
-    progWrap.classList.add('hidden');
-    if(text.trim()) toast('Recibo leído: revisa los datos');
+    aplicarRecibo(text, p, desglosarRecibo(text), {});
   }catch(e){
     status.classList.add('hidden'); status.className='hidden'; progWrap.classList.add('hidden');
     err.textContent='No pudimos leer el recibo: '+(e && e.message ? e.message : 'prueba con más luz y el recibo plano, o llena los datos a mano.');
@@ -639,6 +734,105 @@ async function handleFile(file){
   }finally{
     ocrBusy=false; setOcrButtons(false);
   }
+}
+async function handleFiles(fileList){
+  const files = Array.prototype.slice.call(fileList || []);
+  if(!files.length) return;
+  const status = $('ocrStatus'), progWrap = $('ocrProgWrap'), bar = $('ocrBar'), err = $('scanError');
+  if(ocrBusy){ err.textContent = 'Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  limpiarMultiAviso();
+  let avisoExtra = '';
+  let usar = files;
+  if(files.length > 3){ usar = files.slice(0, 3); avisoExtra = 'Seleccionaste '+files.length+' fotos; usé las primeras 3.'; }
+  if(usar.some(function(f){ return f.size > 20*1024*1024; })){
+    err.textContent = 'Una de las fotos es demasiado grande (más de 20 MB). Toma las fotos de nuevo o elige unas más pequeñas.';
+    err.classList.remove('hidden'); return;
+  }
+  ocrBusy = true; setOcrButtons(true);
+  status.classList.remove('hidden'); status.className = 'pulse'; status.removeAttribute('style');
+  status.textContent = 'Leyendo las fotos del recibo…';
+  progWrap.classList.remove('hidden'); bar.style.width = '5%';
+  const prev = $('preview');
+  if(window._previewUrl) URL.revokeObjectURL(window._previewUrl);
+  window._previewUrl = URL.createObjectURL(usar[0]); prev.src = window._previewUrl; prev.classList.remove('hidden');
+  prev.onerror = function(){ prev.classList.add('hidden'); };
+  try{
+    if(typeof Tesseract === 'undefined'){
+      status.textContent = 'Cargando el lector de recibos\u2026 (necesita internet la primera vez)';
+      await loadTesseractOnce();
+    }
+    if(typeof Tesseract === 'undefined'){
+      throw new Error('lector no cargado: se necesita internet la primera vez que se usa el lector de recibos. Conéctate, recarga la página e inténtalo de nuevo.');
+    }
+    const textos = [];
+    for(let i = 0; i < usar.length; i++){
+      status.textContent = 'Leyendo foto '+(i+1)+' de '+usar.length+'…';
+      let input = usar[i];
+      try{ input = await prepareForOCR(usar[i]); }
+      catch(decodeErr){
+        if(isHeic(usar[i])) throw new Error('la foto '+(i+1)+' está en formato HEIC de iPhone y el navegador no la puede leer. En el iPhone: Ajustes > Cámara > Formatos > "Más compatible", o comparte la foto como JPG y elígela desde la galería.');
+        throw new Error('no se pudo abrir la foto '+(i+1)+'. Prueba con otra foto del recibo.');
+      }
+      const res = await Tesseract.recognize(input, 'eng+spa', { logger: function(m){ if(m.status === 'recognizing text'){ const base = (i + m.progress)/usar.length; bar.style.width = Math.round(5 + base*95)+'%'; } } });
+      textos.push((res.data && res.data.text) || '');
+    }
+    $('ocrText').value = textos.map(function(t, i){ return '--- Foto '+(i+1)+' ---\n'+t; }).join('\n\n');
+    $('ocrDetails').classList.remove('hidden');
+    // PRIMERO verificar: mismo recibo. Si no, no se combina nada.
+    const comb = combinarRecibos(textos);
+    window._lastMulti = comb;
+    if(!comb.ok){
+      window._lastDesglose = null;
+      $('desgloseWrap').classList.add('hidden');
+      const sgx = $('sugerenciaCat'); if(sgx) sgx.classList.add('hidden');
+      status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
+      if(comb.motivo === 'números de recibo distintos'){
+        err.textContent = '⚠️ No combiné las fotos: el número de recibo no coincide entre las fotos ('+comb.recibos.join(' y ')+'). Parecen recibos distintos y mezclarlos daría totales incorrectos. Verifica que las '+usar.length+' fotos sean del mismo recibo y vuelve a intentarlo, o escanea una sola foto.';
+      } else {
+        err.textContent = '⚠️ No combiné las fotos: parecen de recibos distintos. Detecté tiendas diferentes ('+comb.tiendas.join(' y ')+') y mezclarlas daría totales incorrectos. Verifica que las '+usar.length+' fotos sean del mismo recibo y vuelve a intentarlo, o escanea una sola foto.';
+      }
+      err.classList.remove('hidden');
+      return;
+    }
+    // Avisos del combinado
+    const avisos = [];
+    avisos.push('🧾 '+comb.numFotos+' fotos combinadas — fotos del mismo recibo: '+(comb.tienda || 'tienda no identificada'));
+    if(comb.duplicadas > 0) avisos.push('♻️ '+comb.duplicadas+(comb.duplicadas === 1 ? ' línea duplicada ignorada' : ' líneas duplicadas ignoradas')+': se repetía donde las fotos se solapan y se cuenta una sola vez.');
+    else avisos.push('Sin líneas duplicadas entre las fotos.');
+    if(comb.fotosSinTienda > 0) avisos.push('Ojo: en '+comb.fotosSinTienda+' de las fotos no se pudo leer el nombre de la tienda; revisa el desglose antes de guardar.');
+    if(avisoExtra) avisos.push(avisoExtra);
+    const ma = $('multiAviso');
+    ma.innerHTML = avisos.map(function(a){ return '<div>'+esc(a)+'</div>'; }).join('');
+    ma.classList.remove('hidden');
+    const p = {fecha:comb.fecha, suplidor:comb.suplidor, costo:comb.costo, recibo:comb.recibo};
+    const d = {porCat:comb.porCat, lineas:comb.lineas, sinPrecio:comb.sinPrecio};
+    aplicarRecibo(comb.textoCombinado, p, d, {
+      estadoFinal: '✅ Datos detectados de '+comb.numFotos+' fotos combinadas. Revisa y corrige antes de guardar.',
+      toastFinal: 'Recibo combinado de '+comb.numFotos+' fotos: revisa los datos'
+    });
+  }catch(e){
+    status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
+    err.textContent = 'No pudimos leer las fotos: '+(e && e.message ? e.message : 'prueba con más luz y el recibo plano, o llena los datos a mano.');
+    err.classList.remove('hidden');
+  }finally{
+    ocrBusy = false; setOcrButtons(false);
+  }
+}
+function openMultiPicker(inputId){
+  const err = $('scanError');
+  if(ocrBusy){ err.textContent = 'Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
+  const input = $(inputId);
+  if(!input){ err.textContent = 'No se encontró el selector de fotos. Recarga la página e inténtalo de nuevo.'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  try{ input.value = ''; }catch(e){}
+  input.click();
+}
+function onMultiPicked(e){
+  const input = e.target;
+  const files = input.files;
+  try{ input.value = ''; }catch(err){}
+  if(files && files.length) handleFiles(files);
 }
 /* Cableado de los botones de escaneo: botón -> input file oculto -> handleFile.
    input.click() debe ocurrir de forma síncrona dentro del gesto del usuario
@@ -680,6 +874,10 @@ $('btnCamera').addEventListener('click', function(){ openReceiptPicker('fileCame
 $('btnGallery').addEventListener('click', function(){ openReceiptPicker('fileGallery'); });
 $('fileCamera').addEventListener('change', onReceiptPicked);
 $('fileGallery').addEventListener('change', onReceiptPicked);
+const btnMC=$('btnMultiCamera'); if(btnMC) btnMC.addEventListener('click', function(){ openMultiPicker('fileMultiCamera'); });
+const btnMG=$('btnMultiGallery'); if(btnMG) btnMG.addEventListener('click', function(){ openMultiPicker('fileMultiGallery'); });
+$('fileMultiCamera').addEventListener('change', onMultiPicked);
+$('fileMultiGallery').addEventListener('change', onMultiPicked);
 /* Init */
 (function init(){ const hoy=localToday(); setMonth(hoy.slice(0,7)); $('fecha').value=hoy; render(); })();
 </script>
