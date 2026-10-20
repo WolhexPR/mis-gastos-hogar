@@ -104,11 +104,18 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
 </style>
 <div id="toast" class="hidden" role="status"></div>
 <main>
+  <div class="ajustes-bar">
+    <button type="button" class="tema-btn" id="btnTema" aria-label="Tema / Theme">🌙 <span id="temaLbl">Oscuro</span></button>
+    <select class="lang-sel" id="selIdioma" aria-label="Idioma / Language">
+      <option value="es">🇵🇷 Español</option>
+      <option value="en">🇺🇸 English</option>
+    </select>
+  </div>
   <!-- RESUMEN -->
   <section id="tab-summary">
     <div class="section-head">
-      <div><p class="eyebrow">Balance del hogar</p><h1>Tu mes, de un vistazo</h1></div>
-      <input type="month" id="monthSummary" class="month-input" aria-label="Seleccionar mes">
+      <div><p class="eyebrow" data-i18n="eyebrowBalance">Balance del hogar</p><h1 data-i18n="h1Summary">Tu mes, de un vistazo</h1></div>
+      <input type="month" id="monthSummary" class="month-input" data-i18n-label="monthSelect" aria-label="Seleccionar mes">
     </div>
     <div class="total-card receipt-edge">
       <p class="label" id="totalLabel">Gastado</p>
@@ -116,39 +123,39 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
       <div class="dist-bar" id="distBar" aria-label="Distribución por categoría"></div>
       <div class="total-meta"><span id="countMes">0 compras</span><span class="mono" id="catCount">0 categorías</span></div>
     </div>
-    <button class="btn btn-red btn-auto" style="margin-top:20px" onclick="goTab('add')">＋ Registrar compra</button>
+    <button class="btn btn-red btn-auto" style="margin-top:20px" onclick="goTab('add')" data-i18n="addPurchaseBtn">＋ Registrar compra</button>
     <div style="margin-top:36px;display:grid;gap:32px" id="summaryGrid">
       <div>
-        <div class="section-head" style="margin-bottom:16px"><h2>Por categoría</h2><span class="muted" id="catMonthLabel"></span></div>
+        <div class="section-head" style="margin-bottom:16px"><h2 data-i18n="byCategory">Por categoría</h2><span class="muted" id="catMonthLabel"></span></div>
         <div id="catsBox"></div>
       </div>
       <div>
-        <div class="section-head" style="margin-bottom:8px"><h2>Últimas compras</h2><button class="link-red hidden" id="verTodasBtn" onclick="goTab('history')">Ver todas</button></div>
+        <div class="section-head" style="margin-bottom:8px"><h2 data-i18n="latestPurchases">Últimas compras</h2><button class="link-red hidden" id="verTodasBtn" onclick="goTab('history')" data-i18n="viewAll">Ver todas</button></div>
         <div id="recentBox" style="background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.06);padding:4px 16px"></div>
       </div>
     </div>
   </section>
   <!-- AÑADIR -->
   <section id="tab-add" class="hidden" style="max-width:672px;margin:0 auto">
-    <p class="eyebrow">Nueva compra</p>
-    <h1 style="font-size:30px">Del recibo a tus cuentas</h1>
-    <p class="muted">Toma una foto o llena los datos. Siempre podrás revisar todo antes de guardar.</p>
+    <p class="eyebrow" data-i18n="addEyebrow">Nueva compra</p>
+    <h1 style="font-size:30px" data-i18n="addH1">Del recibo a tus cuentas</h1>
+    <p class="muted" data-i18n="addSub">Toma una foto o llena los datos. Siempre podrás revisar todo antes de guardar.</p>
     <div class="card receipt-edge" style="margin-top:20px;padding-bottom:32px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
-        <div><h2 style="font-size:16px">Leer recibo</h2><p class="muted" style="margin:4px 0 0">Detecta fecha, comercio, total y número.</p></div>
+        <div><h2 style="font-size:16px" data-i18n="readReceipt">Leer recibo</h2><p class="muted" style="margin:4px 0 0" data-i18n="readReceiptSub">Detecta fecha, comercio, total y número.</p></div>
         <div style="display:flex;gap:8px">
-          <button type="button" class="icon-btn black" id="btnCamera" aria-label="Tomar foto del recibo">📷</button>
-          <button type="button" class="icon-btn gray" id="btnGallery" aria-label="Elegir imagen del recibo">🖼️</button>
+          <button type="button" class="icon-btn black" id="btnCamera" data-i18n-label="takePhoto" aria-label="Tomar foto del recibo">📷</button>
+          <button type="button" class="icon-btn gray" id="btnGallery" data-i18n-label="pickImage" aria-label="Elegir imagen del recibo">🖼️</button>
         </div>
       </div>
       <input type="file" id="fileCamera" accept="image/*" capture="environment" class="file-hidden" tabindex="-1" aria-hidden="true">
       <input type="file" id="fileGallery" accept="image/*" class="file-hidden" tabindex="-1" aria-hidden="true">
       <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
-        <h3 style="margin:0;font-size:16px">📄 Recibo largo: varias fotos</h3>
-        <p class="muted" style="margin:4px 0 12px">Si el recibo no cabe en una foto, tira 2 o 3 fotos del mismo recibo, de arriba a abajo, con un poco de solape entre ellas. La app verifica que sean de la misma tienda, elimina las líneas repetidas del solape y lo combina todo como un solo recibo.</p>
+        <h3 style="margin:0;font-size:16px" data-i18n="longReceipt">📄 Recibo largo: varias fotos</h3>
+        <p class="muted" style="margin:4px 0 12px" data-i18n="longReceiptSub">Si el recibo no cabe en una foto, tira 2 o 3 fotos del mismo recibo, de arriba a abajo, con un poco de solape entre ellas. La app verifica que sean de la misma tienda, elimina las líneas repetidas del solape y lo combina todo como un solo recibo.</p>
         <div class="grid2" style="gap:10px">
-          <button type="button" class="btn btn-outline" style="min-height:48px;font-size:14px" id="btnMultiCamera">📷 Varias fotos · cámara</button>
-          <button type="button" class="btn btn-outline" style="min-height:48px;font-size:14px" id="btnMultiGallery">🖼️ Varias fotos · galería</button>
+          <button type="button" class="btn btn-outline" style="min-height:48px;font-size:14px" id="btnMultiCamera" data-i18n="multiCam">📷 Varias fotos · cámara</button>
+          <button type="button" class="btn btn-outline" style="min-height:48px;font-size:14px" id="btnMultiGallery" data-i18n="multiGal">🖼️ Varias fotos · galería</button>
         </div>
         <input type="file" id="fileMultiCamera" accept="image/*" capture="environment" multiple class="file-hidden" tabindex="-1" aria-hidden="true">
         <input type="file" id="fileMultiGallery" accept="image/*" multiple class="file-hidden" tabindex="-1" aria-hidden="true">
@@ -159,62 +166,282 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
       <div class="progress hidden" id="ocrProgWrap"><i id="ocrBar"></i></div>
       <p id="scanError" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px;margin-top:12px" role="alert"></p>
       <details id="ocrDetails" class="hidden" style="margin-top:12px">
-        <summary class="muted" style="cursor:pointer;font-weight:600">Ver texto detectado</summary>
-        <textarea id="ocrText" rows="4" class="field" style="margin-top:8px" placeholder="Texto detectado…"></textarea>
+        <summary class="muted" style="cursor:pointer;font-weight:600" data-i18n="viewDetected">Ver texto detectado</summary>
+        <textarea id="ocrText" rows="4" class="field" style="margin-top:8px" data-i18n-ph="ocrTextPh" placeholder="Texto detectado…"></textarea>
       </details>
       <p id="sugerenciaCat" class="hidden" style="margin-top:12px;font-size:14px;font-weight:600;background:#fff1f2;border:1px solid var(--accent);border-radius:12px;padding:10px 12px"></p>
       <div id="desgloseWrap" class="hidden" style="margin-top:12px">
-        <div class="section-head" style="margin-bottom:8px"><h3 style="margin:0;font-size:16px">Desglose del recibo por categoría</h3></div>
-        <p class="muted" style="margin:0 0 8px">Esto es lo que distinguió la app artículo por artículo. Revísalo: tú confirmas antes de guardar.</p>
+        <div class="section-head" style="margin-bottom:8px"><h3 style="margin:0;font-size:16px" data-i18n="breakdownTitle">Desglose del recibo por categoría</h3></div>
+        <p class="muted" style="margin:0 0 8px" data-i18n="breakdownSub">Esto es lo que distinguió la app artículo por artículo. Revísalo: tú confirmas antes de guardar.</p>
         <div id="desgloseList"></div>
-        <p id="desgloseAviso" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px;margin-top:8px">Pude leer pocas líneas — revisa los montos.</p>
+        <p id="desgloseAviso" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px;margin-top:8px" data-i18n="breakdownWarn">Pude leer pocas líneas — revisa los montos.</p>
         <button type="button" id="btnGuardarDesglose" class="btn btn-black" style="margin-top:10px">Guardar como N compras</button>
-        <p class="muted small" style="margin-top:8px">Al guardar el desglose se crea una compra por cada categoría, con la misma fecha, suplidor y número de recibo. Cada una se verá por separado en el Historial y en el CSV.</p>
+        <p class="muted small" style="margin-top:8px" data-i18n="breakdownNote">Al guardar el desglose se crea una compra por cada categoría, con la misma fecha, suplidor y número de recibo. Cada una se verá por separado en el Historial y en el CSV.</p>
       </div>
     </div>
     <form id="form" style="margin-top:24px">
       <div class="grid2">
-        <div><label class="field-label" for="fecha">Fecha<span class="req">*</span></label><input type="date" id="fecha" class="field" required></div>
-        <div><label class="field-label" for="suplidor">Suplidor<span class="req">*</span></label><input id="suplidor" class="field" placeholder="Costco, Sam's, Econo…" list="suplidores" required><datalist id="suplidores"><option>Costco</option><option>Sam's Club</option><option>Econo</option><option>Pueblo</option><option>Amigo</option><option>Walmart</option><option>Farmacia</option><option>Otro</option></datalist></div>
-        <div><label class="field-label" for="categoria">Categoría<span class="req">*</span></label><select id="categoria" class="field"><option>Alimentos</option><option>Proteínas</option><option>Limpieza</option><option>Higiene</option><option>Bebidas</option><option>Hogar</option><option>Otros</option></select></div>
-        <div><label class="field-label" for="producto">Producto<span class="req">*</span></label><input id="producto" class="field" placeholder="Ej. Compra semanal" required></div>
-        <div><label class="field-label" for="cantidad">Cantidad<span class="req">*</span></label><input type="number" id="cantidad" class="field" min="0.01" step="0.01" value="1" required></div>
-        <div><label class="field-label" for="costo">Costo total ($)<span class="req">*</span></label><input type="number" id="costo" class="field mono" min="0" step="0.01" placeholder="0.00" required></div>
+        <div><label class="field-label" for="fecha" data-i18n="fDate">Fecha<span class="req">*</span></label><input type="date" id="fecha" class="field" required></div>
+        <div><label class="field-label" for="suplidor" data-i18n="fStore">Suplidor<span class="req">*</span></label><input id="suplidor" class="field" placeholder="Costco, Sam's, Econo…" list="suplidores" required><datalist id="suplidores"><option>Costco</option><option>Sam's Club</option><option>Econo</option><option>Pueblo</option><option>Amigo</option><option>Walmart</option><option>Farmacia</option><option>Otro</option></datalist></div>
+        <div><label class="field-label" for="categoria" data-i18n="fCategory">Categoría<span class="req">*</span></label><select id="categoria" class="field"><option value="Alimentos">Alimentos</option><option value="Proteínas">Proteínas</option><option value="Limpieza">Limpieza</option><option value="Higiene">Higiene</option><option value="Bebidas">Bebidas</option><option value="Hogar">Hogar</option><option value="Otros">Otros</option></select></div>
+        <div><label class="field-label" for="producto" data-i18n="fProduct">Producto<span class="req">*</span></label><input id="producto" class="field" data-i18n-ph="productPh" placeholder="Ej. Compra semanal" required></div>
+        <div><label class="field-label" for="cantidad" data-i18n="fQty">Cantidad<span class="req">*</span></label><input type="number" id="cantidad" class="field" min="0.01" step="0.01" value="1" required></div>
+        <div><label class="field-label" for="costo" data-i18n="fCost">Costo total ($)<span class="req">*</span></label><input type="number" id="costo" class="field mono" min="0" step="0.01" placeholder="0.00" required></div>
       </div>
-      <div style="margin-top:16px"><label class="field-label" for="recibo">Número de recibo<span class="hint">Opcional</span></label><input id="recibo" class="field mono" placeholder="Ej. 004812"></div>
+      <div style="margin-top:16px"><label class="field-label" for="recibo" data-i18n="fReceipt">Número de recibo<span class="hint">Opcional</span></label><input id="recibo" class="field mono" data-i18n-ph="receiptPh" placeholder="Ej. 004812"></div>
       <p id="formError" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px" role="alert"></p>
-      <button type="submit" class="btn btn-red" style="margin-top:20px">✓ Guardar compra</button>
-      <button type="button" class="btn btn-outline" style="margin-top:10px" onclick="limpiar()">Limpiar formulario</button>
+      <button type="submit" class="btn btn-red" style="margin-top:20px" data-i18n="savePurchase">✓ Guardar compra</button>
+      <button type="button" class="btn btn-outline" style="margin-top:10px" onclick="limpiar()" data-i18n="clearForm">Limpiar formulario</button>
     </form>
   </section>
   <!-- HISTORIAL -->
   <section id="tab-history" class="hidden" style="max-width:768px;margin:0 auto">
     <div class="section-head">
-      <div><p class="eyebrow">Archivo mensual</p><h1 style="font-size:30px">Historial</h1></div>
-      <input type="month" id="monthHistory" class="month-input" aria-label="Seleccionar mes">
+      <div><p class="eyebrow" data-i18n="histEyebrow">Archivo mensual</p><h1 style="font-size:30px" data-i18n="histH1">Historial</h1></div>
+      <input type="month" id="monthHistory" class="month-input" data-i18n-label="monthSelect" aria-label="Seleccionar mes">
     </div>
     <div class="search-wrap">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-      <input type="search" id="buscar" class="field" placeholder="Buscar suplidor, producto o recibo" aria-label="Buscar en el historial">
+      <input type="search" id="buscar" class="field" data-i18n-ph="searchPh" placeholder="Buscar suplidor, producto o recibo" data-i18n-label="searchLabel" aria-label="Buscar en el historial">
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn btn-outline" style="min-height:44px;font-size:14px" onclick="exportCSV()">Exportar CSV</button>
-      <button class="btn btn-outline" style="min-height:44px;font-size:14px;color:var(--danger);border-color:var(--danger)" onclick="askBorrarTodo()">Borrar todo</button>
+      <button class="btn btn-outline" style="min-height:44px;font-size:14px" onclick="exportCSV()" data-i18n="exportCsv">Exportar CSV</button>
+      <button class="btn btn-outline" style="min-height:44px;font-size:14px;color:var(--danger);border-color:var(--danger)" onclick="askBorrarTodo()" data-i18n="deleteAll">Borrar todo</button>
     </div>
     <div id="resetConfirm" class="confirm-box hidden" role="alertdialog" aria-labelledby="resetTitle" aria-describedby="resetDetail" style="background:var(--surface);box-shadow:0 8px 30px rgba(0,0,0,.08);padding:16px;margin-top:12px;border-top:0">
-      <div><strong id="resetTitle">¿Borrar todos los gastos?</strong><p id="resetDetail" class="muted" style="margin:4px 0 0">Se eliminarán las compras de todos los meses. Esta acción no se puede deshacer.</p></div>
-      <span class="actions"><button class="btn-cancel" onclick="cancelBorrarTodo()">Cancelar</button><button class="btn-confirm-del" onclick="confirmBorrarTodo()">Sí, borrar todo</button></span>
+      <div><strong id="resetTitle" data-i18n="resetTitle">¿Borrar todos los gastos?</strong><p id="resetDetail" class="muted" style="margin:4px 0 0" data-i18n="resetDetail">Se eliminarán las compras de todos los meses. Esta acción no se puede deshacer.</p></div>
+      <span class="actions"><button class="btn-cancel" onclick="cancelBorrarTodo()" data-i18n="cancel">Cancelar</button><button class="btn-confirm-del" onclick="confirmBorrarTodo()" data-i18n="yesDeleteAll">Sí, borrar todo</button></span>
     </div>
     <div id="lista" style="margin-top:20px"></div>
     <div id="historialVacio"></div>
   </section>
-  <p class="footer-note">Tus datos se guardan en este teléfono (almacenamiento del navegador).<br>Sin servidor, sin cuenta. Haz una copia con Exportar CSV cuando quieras.</p>
+  <p class="footer-note" data-i18n-html="footerNote">Tus datos se guardan en este teléfono (almacenamiento del navegador).<br>Sin servidor, sin cuenta. Haz una copia con Exportar CSV cuando quieras.</p>
 </main>
 <nav class="bottom" aria-label="Navegación principal"><div class="inner">
-  <button class="nav-btn active" id="nav-summary" onclick="goTab('summary')"><span style="font-size:20px">⌂</span>Resumen</button>
-  <button class="nav-btn" id="nav-add" onclick="goTab('add')"><span style="font-size:20px">＋</span>Añadir</button>
-  <button class="nav-btn" id="nav-history" onclick="goTab('history')"><span style="font-size:20px">☰</span>Historial</button>
+  <button class="nav-btn active" id="nav-summary" onclick="goTab('summary')"><span style="font-size:20px">⌂</span><span data-i18n="navSummary">Resumen</span></button>
+  <button class="nav-btn" id="nav-add" onclick="goTab('add')"><span style="font-size:20px">＋</span><span data-i18n="navAdd">Añadir</span></button>
+  <button class="nav-btn" id="nav-history" onclick="goTab('history')"><span style="font-size:20px">☰</span><span data-i18n="navHistory">Historial</span></button>
 </div></nav>
+<script>
+/* ===== Idiomas ES/EN + tema cristal (Claro/Oscuro) ===== */
+var LANG_KEY='gastos_idioma', TEMA_KEY='gastos_tema';
+var LANG='es', TEMA='claro';
+try{ LANG = localStorage.getItem(LANG_KEY) || 'es'; TEMA = localStorage.getItem(TEMA_KEY) || 'claro'; }catch(e){}
+if(LANG!=='en') LANG='es'; if(TEMA!=='oscuro') TEMA='claro';
+var STR = {
+es: {
+  appTitle:'Mis Gastos del Hogar', eyebrowBalance:'Balance del hogar', h1Summary:'Tu mes, de un vistazo',
+  monthSelect:'Seleccionar mes', addPurchaseBtn:'＋ Registrar compra', byCategory:'Por categoría',
+  latestPurchases:'Últimas compras', viewAll:'Ver todas', addEyebrow:'Nueva compra',
+  addH1:'Del recibo a tus cuentas', addSub:'Toma una foto o llena los datos. Siempre podrás revisar todo antes de guardar.',
+  readReceipt:'Leer recibo', readReceiptSub:'Detecta fecha, comercio, total y número.',
+  takePhoto:'Tomar foto del recibo', pickImage:'Elegir imagen del recibo',
+  longReceipt:'📄 Recibo largo: varias fotos',
+  longReceiptSub:'Si el recibo no cabe en una foto, tira 2 o 3 fotos del mismo recibo, de arriba a abajo, con un poco de solape entre ellas. La app verifica que sean de la misma tienda, elimina las líneas repetidas del solape y lo combina todo como un solo recibo.',
+  multiCam:'📷 Varias fotos · cámara', multiGal:'🖼️ Varias fotos · galería', viewDetected:'Ver texto detectado',
+  ocrTextPh:'Texto detectado…', breakdownTitle:'Desglose del recibo por categoría',
+  breakdownSub:'Esto es lo que distinguió la app artículo por artículo. Revísalo: tú confirmas antes de guardar.',
+  breakdownWarn:'Pude leer pocas líneas — revisa los montos.',
+  breakdownNote:'Al guardar el desglose se crea una compra por cada categoría, con la misma fecha, suplidor y número de recibo. Cada una se verá por separado en el Historial y en el CSV.',
+  fDate:'Fecha', fStore:'Suplidor', fCategory:'Categoría', fProduct:'Producto', fQty:'Cantidad',
+  fCost:'Costo total ($)', fReceipt:'Número de recibo', optional:'Opcional',
+  productPh:'Ej. Compra semanal', receiptPh:'Ej. 004812',
+  savePurchase:'✓ Guardar compra', clearForm:'Limpiar formulario',
+  histEyebrow:'Archivo mensual', histH1:'Historial', searchPh:'Buscar suplidor, producto o recibo',
+  searchLabel:'Buscar en el historial', exportCsv:'Exportar CSV', deleteAll:'Borrar todo',
+  resetTitle:'¿Borrar todos los gastos?', resetDetail:'Se eliminarán las compras de todos los meses. Esta acción no se puede deshacer.',
+  cancel:'Cancelar', yesDeleteAll:'Sí, borrar todo',
+  footerNote:'Tus datos se guardan en este teléfono (almacenamiento del navegador).<br>Sin servidor, sin cuenta. Haz una copia con Exportar CSV cuando quieras.',
+  navSummary:'Resumen', navAdd:'Añadir', navHistory:'Historial', temaClaro:'Claro', temaOscuro:'Oscuro',
+  spentIn:'Gastado en ', purchaseOne:' compra', purchaseMany:' compras', catOne:' categoría', catMany:' categorías',
+  noExpensesTitle:'Aún no hay gastos este mes', noExpensesSub:'Registra tu primera compra para ver el desglose.',
+  addPurchase:'Añadir compra', recentEmpty:'Tus compras aparecerán aquí.',
+  noMatches:'No encontramos coincidencias', noPurchasesTitle:'No hay compras registradas',
+  tryOther:'Prueba con otro término.', noPurchasesYet:'Todavía no hay compras en ', clearSearch:'Limpiar búsqueda',
+  qty:'Cant.', receiptWord:'Recibo', deleteBtn:'🗑 Eliminar', askDeleteQ:'¿Eliminar esta compra?',
+  yesDelete:'Sí, eliminar', purchaseDeleted:'Compra eliminada',
+  formError:'Completa fecha, suplidor y producto, con cantidad y costo total mayores de $0.',
+  purchaseSaved:'Compra guardada', noPurchases:'No hay compras registradas', allDeleted:'Todos los gastos fueron borrados',
+  noExport:'No hay compras para exportar todavía', csvExported:'CSV exportado',
+  csvDate:'Fecha', csvStore:'Suplidor', csvCat:'Categoría', csvProduct:'Producto', csvQty:'Cantidad', csvCost:'Costo', csvReceipt:'Recibo',
+  saveError:'No se pudo guardar: almacenamiento lleno o bloqueado en este teléfono',
+  noBreakdown:'No hay desglose para guardar',
+  breakdownFormError:'Para guardar el desglose completa fecha y suplidor (la app los detecta del recibo, revísalos).',
+  various:'Varias', noAmounts:'No hay montos en el desglose', breakdownSaveFail:'No se pudo guardar el desglose',
+  breakdownSavedPre:'Desglose guardado como ', breakdownSavedPost:' compras',
+  suggestedPre:'Categoría sugerida: ', suggestedPost:' — revísala en el formulario y confírmala con un toque antes de guardar.',
+  suggestedToastPost:' — confírmala',
+  breakdownTotal:'Total del desglose', itemsRead:' artículos leídos',
+  saveAsPre:'Guardar como ', saveAsPost:' compras (una por categoría)', saveAsOnePre:'Guardar como 1 compra (',
+  dataDetected:'✅ Datos detectados. Revisa y corrige antes de guardar.',
+  noText:'⚠️ No se detectó texto. Prueba con más luz y el recibo plano, o llena los datos a mano.',
+  receiptRead:'Recibo leído: revisa los datos',
+  waitPrev:'Espera a que termine de leer el recibo anterior.',
+  photoTooBig:'La foto es demasiado grande (más de 20 MB). Toma la foto de nuevo o elige una más pequeña.',
+  onePhotoTooBig:'Una de las fotos es demasiado grande (más de 20 MB). Toma las fotos de nuevo o elige unas más pequeñas.',
+  reading:'Leyendo el recibo…', readingFirst:'Leyendo el recibo… (la primera vez tarda más)',
+  readingPhotos:'Leyendo las fotos del recibo…', readingPhotoPre:'Leyendo foto ', readingPhotoMid:' de ', readingPhotoPost:'…',
+  loadingReader:'Cargando el lector de recibos… (necesita internet la primera vez)',
+  readerFail:'lector no cargado: se necesita internet la primera vez que se usa el lector de recibos. Conéctate, recarga la página e inténtalo de nuevo.',
+  heicSingle:'esta foto está en formato HEIC de iPhone y el navegador no la puede leer. En el iPhone: Ajustes > Cámara > Formatos > "Más compatible", o comparte la foto como JPG y elígela desde la galería.',
+  heicMultiPre:'la foto ', heicMultiPost:' está en formato HEIC de iPhone y el navegador no la puede leer. En el iPhone: Ajustes > Cámara > Formatos > "Más compatible", o comparte la foto como JPG y elígela desde la galería.',
+  openFailSingle:'no se pudo abrir esa imagen. Prueba con otra foto del recibo.',
+  openFailMultiPre:'no se pudo abrir la foto ', openFailMultiPost:'. Prueba con otra foto del recibo.',
+  readFailPre:'No pudimos leer el recibo: ', readFailFallback:'prueba con más luz y el recibo plano, o llena los datos a mano.',
+  readPhotosFailPre:'No pudimos leer las fotos: ',
+  pickerMissing:'No se encontró el selector de fotos. Recarga la página e inténtalo de nuevo.',
+  pickedPre:'Seleccionaste ', pickedPost:' fotos; usé las primeras 3.', photoWord:'Foto',
+  mismatchNumPre:'⚠️ No combiné las fotos: el número de recibo no coincide entre las fotos (',
+  mismatchNumPost:'). Parecen recibos distintos y mezclarlos daría totales incorrectos. Verifica que las ',
+  mismatchStorePre:'⚠️ No combiné las fotos: parecen de recibos distintos. Detecté tiendas diferentes (',
+  mismatchStorePost:') y mezclarlas daría totales incorrectos. Verifica que las ',
+  mismatchEnd:' fotos sean del mismo recibo y vuelve a intentarlo, o escanea una sola foto.',
+  combinedPre:'🧾 ', combinedMid:' fotos combinadas — fotos del mismo recibo: ', storeUnknown:'tienda no identificada',
+  dupOne:' línea duplicada ignorada', dupMany:' líneas duplicadas ignoradas',
+  dupPost:': se repetía donde las fotos se solapan y se cuenta una sola vez.',
+  noDups:'Sin líneas duplicadas entre las fotos.',
+  noStorePre:'Ojo: en ', noStorePost:' de las fotos no se pudo leer el nombre de la tienda; revisa el desglose antes de guardar.',
+  multiDetectedPre:'✅ Datos detectados de ', multiDetectedPost:' fotos combinadas. Revisa y corrige antes de guardar.',
+  multiToastPre:'Recibo combinado de ', multiToastPost:' fotos: revisa los datos', andWord:' y '
+},
+en: {
+  appTitle:'My Household Expenses', eyebrowBalance:'Home balance', h1Summary:'Your month at a glance',
+  monthSelect:'Select month', addPurchaseBtn:'＋ Add purchase', byCategory:'By category',
+  latestPurchases:'Latest purchases', viewAll:'View all', addEyebrow:'New purchase',
+  addH1:'From receipt to your books', addSub:'Take a photo or fill in the details. You can always review everything before saving.',
+  readReceipt:'Read receipt', readReceiptSub:'Detects date, store, total and number.',
+  takePhoto:'Take a photo of the receipt', pickImage:'Choose a receipt image',
+  longReceipt:'📄 Long receipt: multiple photos',
+  longReceiptSub:'If the receipt does not fit in one photo, take 2 or 3 photos of the same receipt, top to bottom, with a little overlap between them. The app checks they are from the same store, removes the repeated lines from the overlap and combines everything as a single receipt.',
+  multiCam:'📷 Multiple photos · camera', multiGal:'🖼️ Multiple photos · gallery', viewDetected:'View detected text',
+  ocrTextPh:'Detected text…', breakdownTitle:'Receipt breakdown by category',
+  breakdownSub:'This is what the app picked out item by item. Review it: you confirm before saving.',
+  breakdownWarn:'I could only read a few lines — check the amounts.',
+  breakdownNote:'Saving the breakdown creates one purchase per category, with the same date, store and receipt number. Each one shows separately in History and in the CSV.',
+  fDate:'Date', fStore:'Store', fCategory:'Category', fProduct:'Product', fQty:'Quantity',
+  fCost:'Total cost ($)', fReceipt:'Receipt number', optional:'Optional',
+  productPh:'E.g. Weekly groceries', receiptPh:'E.g. 004812',
+  savePurchase:'✓ Save purchase', clearForm:'Clear form',
+  histEyebrow:'Monthly archive', histH1:'History', searchPh:'Search store, product or receipt',
+  searchLabel:'Search history', exportCsv:'Export CSV', deleteAll:'Delete all',
+  resetTitle:'Delete all expenses?', resetDetail:'Purchases from all months will be deleted. This cannot be undone.',
+  cancel:'Cancel', yesDeleteAll:'Yes, delete all',
+  footerNote:'Your data is stored on this phone (browser storage).<br>No server, no account. Back it up with Export CSV whenever you want.',
+  navSummary:'Summary', navAdd:'Add', navHistory:'History', temaClaro:'Light', temaOscuro:'Dark',
+  spentIn:'Spent in ', purchaseOne:' purchase', purchaseMany:' purchases', catOne:' category', catMany:' categories',
+  noExpensesTitle:'No expenses yet this month', noExpensesSub:'Add your first purchase to see the breakdown.',
+  addPurchase:'Add purchase', recentEmpty:'Your purchases will appear here.',
+  noMatches:'No matches found', noPurchasesTitle:'No purchases recorded',
+  tryOther:'Try a different search.', noPurchasesYet:'No purchases yet in ', clearSearch:'Clear search',
+  qty:'Qty.', receiptWord:'Receipt', deleteBtn:'🗑 Delete', askDeleteQ:'Delete this purchase?',
+  yesDelete:'Yes, delete', purchaseDeleted:'Purchase deleted',
+  formError:'Fill in date, store and product, with quantity and total cost greater than $0.',
+  purchaseSaved:'Purchase saved', noPurchases:'No purchases recorded', allDeleted:'All expenses were deleted',
+  noExport:'No purchases to export yet', csvExported:'CSV exported',
+  csvDate:'Date', csvStore:'Store', csvCat:'Category', csvProduct:'Product', csvQty:'Quantity', csvCost:'Cost', csvReceipt:'Receipt',
+  saveError:'Could not save: storage full or blocked on this phone',
+  noBreakdown:'No breakdown to save',
+  breakdownFormError:'To save the breakdown, fill in date and store (the app detects them from the receipt — review them).',
+  various:'Various', noAmounts:'No amounts in the breakdown', breakdownSaveFail:'Could not save the breakdown',
+  breakdownSavedPre:'Breakdown saved as ', breakdownSavedPost:' purchases',
+  suggestedPre:'Suggested category: ', suggestedPost:' — check it in the form and confirm it with a tap before saving.',
+  suggestedToastPost:' — confirm it',
+  breakdownTotal:'Breakdown total', itemsRead:' items read',
+  saveAsPre:'Save as ', saveAsPost:' purchases (one per category)', saveAsOnePre:'Save as 1 purchase (',
+  dataDetected:'✅ Data detected. Review and fix before saving.',
+  noText:'⚠️ No text detected. Try more light and a flat receipt, or fill in the details by hand.',
+  receiptRead:'Receipt read: review the details',
+  waitPrev:'Wait for the previous receipt to finish reading.',
+  photoTooBig:'The photo is too large (over 20 MB). Take the photo again or pick a smaller one.',
+  onePhotoTooBig:'One of the photos is too large (over 20 MB). Take the photos again or pick smaller ones.',
+  reading:'Reading the receipt…', readingFirst:'Reading the receipt… (the first time takes longer)',
+  readingPhotos:'Reading the receipt photos…', readingPhotoPre:'Reading photo ', readingPhotoMid:' of ', readingPhotoPost:'…',
+  loadingReader:'Loading the receipt reader… (needs internet the first time)',
+  readerFail:'reader not loaded: internet is needed the first time the receipt reader is used. Connect, reload the page and try again.',
+  heicSingle:'this photo is in iPhone HEIC format and the browser cannot read it. On the iPhone: Settings > Camera > Formats > "Most Compatible", or share the photo as JPG and pick it from the gallery.',
+  heicMultiPre:'photo ', heicMultiPost:' is in iPhone HEIC format and the browser cannot read it. On the iPhone: Settings > Camera > Formats > "Most Compatible", or share the photo as JPG and pick it from the gallery.',
+  openFailSingle:'that image could not be opened. Try another photo of the receipt.',
+  openFailMultiPre:'photo ', openFailMultiPost:' could not be opened. Try another photo of the receipt.',
+  readFailPre:'We could not read the receipt: ', readFailFallback:'try more light and a flat receipt, or fill in the details by hand.',
+  readPhotosFailPre:'We could not read the photos: ',
+  pickerMissing:'The photo picker was not found. Reload the page and try again.',
+  pickedPre:'You picked ', pickedPost:' photos; I used the first 3.', photoWord:'Photo',
+  mismatchNumPre:'⚠️ I did not combine the photos: the receipt number does not match between photos (',
+  mismatchNumPost:'). They look like different receipts and mixing them would give wrong totals. Check that the ',
+  mismatchStorePre:'⚠️ I did not combine the photos: they look like different receipts. I detected different stores (',
+  mismatchStorePost:') and mixing them would give wrong totals. Check that the ',
+  mismatchEnd:' photos are from the same receipt and try again, or scan a single photo.',
+  combinedPre:'🧾 ', combinedMid:' photos combined — photos of the same receipt: ', storeUnknown:'store not identified',
+  dupOne:' duplicated line ignored', dupMany:' duplicated lines ignored',
+  dupPost:': it was repeated where the photos overlap and counts only once.',
+  noDups:'No duplicated lines between the photos.',
+  noStorePre:'Note: in ', noStorePost:' of the photos the store name could not be read; review the breakdown before saving.',
+  multiDetectedPre:'✅ Data detected from ', multiDetectedPost:' combined photos. Review and fix before saving.',
+  multiToastPre:'Receipt combined from ', multiToastPost:' photos: review the details', andWord:' and '
+}};
+function T(k){ return (STR[LANG] && STR[LANG][k]) || STR.es[k] || k; }
+var MESES_I18N = {
+  es:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+  en:['January','February','March','April','May','June','July','August','September','October','November','December']
+};
+function meses(){ return MESES_I18N[LANG] || MESES_I18N.es; }
+var CAT_EN = {'Alimentos':'Food','Proteínas':'Protein','Limpieza':'Cleaning','Higiene':'Hygiene','Bebidas':'Drinks','Hogar':'Home','Otros':'Other'};
+function catName(c){ return LANG==='en' ? (CAT_EN[c] || c) : c; }
+function _el(id){ return document.getElementById(id); }
+function applyTemaLbl(){
+  var l = _el('temaLbl'), b = _el('btnTema'); if(!l || !b) return;
+  var oscuro = document.body.classList.contains('tema-oscuro');
+  l.textContent = oscuro ? T('temaClaro') : T('temaOscuro');
+  if(b.firstChild) b.firstChild.nodeValue = oscuro ? '☀️ ' : '🌙 ';
+}
+function applyTema(){
+  var oscuro = (TEMA === 'oscuro');
+  document.body.classList.toggle('tema-oscuro', oscuro);
+  var m = document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute('content', oscuro ? '#07070c' : '#eef2f8');
+  document.documentElement.style.background = oscuro ? '#07070c' : '#eef2f8';
+  applyTemaLbl();
+}
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.title = T('appTitle');
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(el.classList.contains('field-label')){
+      if(el.childNodes[0]) el.childNodes[0].nodeValue = T(k);
+      var hint = el.querySelector('.hint'); if(hint) hint.textContent = T('optional');
+    } else { el.textContent = T(k); }
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(function(el){ el.innerHTML = T(el.getAttribute('data-i18n-html')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ el.placeholder = T(el.getAttribute('data-i18n-ph')); });
+  document.querySelectorAll('[data-i18n-label]').forEach(function(el){ el.setAttribute('aria-label', T(el.getAttribute('data-i18n-label'))); });
+  var sel = _el('categoria');
+  if(sel) Array.prototype.forEach.call(sel.options, function(o){ o.textContent = catName(o.value); });
+  var si = _el('selIdioma'); if(si) si.value = LANG;
+  applyTemaLbl();
+  if(typeof render === 'function') render();
+}
+(function(){
+  try{
+    var q = new URLSearchParams(location.search);
+    if(q.get('lang')) LANG = q.get('lang')==='en' ? 'en' : 'es';
+    if(q.get('tema')) TEMA = q.get('tema')==='oscuro' ? 'oscuro' : 'claro';
+  }catch(e){}
+  applyTema(); applyLang();
+  var b = _el('btnTema');
+  if(b) b.addEventListener('click', function(){
+    TEMA = document.body.classList.contains('tema-oscuro') ? 'claro' : 'oscuro';
+    try{ localStorage.setItem(TEMA_KEY, TEMA); }catch(e){}
+    applyTema();
+  });
+  var s = _el('selIdioma');
+  if(s) s.addEventListener('change', function(){
+    LANG = s.value==='en' ? 'en' : 'es';
+    try{ localStorage.setItem(LANG_KEY, LANG); }catch(e){}
+    applyLang();
+  });
+})();
+</script>
 <script>
 const KEY='gastos_hogar_v1';
 const CAT_COLORS={"Alimentos":"#D90429","Proteínas":"#111111","Limpieza":"#F04B5A","Higiene":"#626262","Bebidas":"#98001C","Hogar":"#A9A9A9","Otros":"#5B0010"};
@@ -224,14 +451,14 @@ let deleteId=null;
 const $=id=>document.getElementById(id);
 const fmt=n=>'$'+Number(n||0).toFixed(2);
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); return true; }catch(e){ toast('No se pudo guardar: almacenamiento lleno o bloqueado en este teléfono'); return false; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); return true; }catch(e){ toast(T('saveError')); return false; } }
 function toast(msg){ const t=$('toast'); t.textContent='✓ '+msg; t.classList.remove('hidden'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.add('hidden'),2600); }
 function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function localToday(){ const d=new Date(); const off=d.getTimezoneOffset()*60000; return new Date(d.getTime()-off).toISOString().slice(0,10); }
 function currentMonthVal(){ return $('monthSummary').value || localToday().slice(0,7); }
-function formatMonth(mk){ const p=mk.split('-'); return (MESES[parseInt(p[1],10)-1]||'')+' '+p[0]; }
-function formatDate(f){ if(!f) return ''; const p=f.split('-'); return (parseInt(p[2],10)||'')+' '+(MESES[parseInt(p[1],10)-1]||'').slice(0,3).toLowerCase()+' '+p[0]; }
-function colorFor(cat,idx){ return CAT_COLORS[cat]||COLOR_LIST[idx%COLOR_LIST.length]; }
+function formatMonth(mk){ const p=mk.split('-'); return (meses()[parseInt(p[1],10)-1]||'')+' '+p[0]; }
+function formatDate(f){ if(!f) return ''; const p=f.split('-'); return (parseInt(p[2],10)||'')+' '+(meses()[parseInt(p[1],10)-1]||'').slice(0,3).toLowerCase()+' '+p[0]; }
+function colorFor(cat,idx){ var c=CAT_COLORS[cat]||COLOR_LIST[idx%COLOR_LIST.length]; if(document.body.classList.contains('tema-oscuro')){ if(c==='#111111') return '#D9D9E0'; if(c==='#5B0010') return '#C04A5A'; } return c; }
 function setMonth(mk){ $('monthSummary').value=mk; $('monthHistory').value=mk; }
 function goTab(tab){
   ['summary','add','history'].forEach(name=>{
@@ -248,24 +475,24 @@ function render(){
   const mk=currentMonthVal();
   const filtered=data.filter(x=>(x.fecha||'').slice(0,7)===mk).sort((a,b)=>(b.fecha+String(b.id)).localeCompare(a.fecha+String(a.id)));
   const total=filtered.reduce((s,x)=>s+Number(x.costo||0),0);
-  $('totalLabel').textContent='Gastado en '+formatMonth(mk);
+  $('totalLabel').textContent=T('spentIn')+formatMonth(mk);
   $('totalMes').textContent=fmt(total);
-  $('countMes').textContent=filtered.length+(filtered.length===1?' compra':' compras');
+  $('countMes').textContent=filtered.length+(filtered.length===1?T('purchaseOne'):T('purchaseMany'));
   $('catMonthLabel').textContent=formatMonth(mk);
   const byCat={}; filtered.forEach(x=>{ byCat[x.categoria]=(byCat[x.categoria]||0)+Number(x.costo||0); });
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-  $('catCount').textContent=cats.length+(cats.length===1?' categoría':' categorías');
-  $('distBar').innerHTML = total>0 ? cats.map(([c,v],i)=>'<span style="width:'+(v/total*100)+'%;background:'+colorFor(c,i)+'" title="'+esc(c)+': '+fmt(v)+'"></span>').join('') : '<span style="width:100%;background:rgba(255,255,255,.15)"></span>';
+  $('catCount').textContent=cats.length+(cats.length===1?T('catOne'):T('catMany'));
+  $('distBar').innerHTML = total>0 ? cats.map(([c,v],i)=>'<span style="width:'+(v/total*100)+'%;background:'+colorFor(c,i)+'" title="'+esc(catName(c))+': '+fmt(v)+'"></span>').join('') : '<span style="width:100%;background:rgba(255,255,255,.15)"></span>';
   $('catsBox').innerHTML = cats.length ? cats.map(([c,v],i)=>{
     const pct= total? Math.max(5, Math.round(v/total*100)):0;
-    return '<div class="cat-row"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><strong>'+esc(c)+'</strong><span class="mono" style="font-size:14px">'+fmt(v)+'</span></div><div class="cat-bar"><i style="width:'+pct+'%;background:'+colorFor(c,i)+'"></i></div></div>';
-  }).join('') : '<div class="paper"><p class="empty-title">Aún no hay gastos este mes</p><p class="muted">Registra tu primera compra para ver el desglose.</p><button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="goTab(\'add\')">Añadir compra</button></div>';
+    return '<div class="cat-row"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><strong>'+esc(catName(c))+'</strong><span class="mono" style="font-size:14px">'+fmt(v)+'</span></div><div class="cat-bar"><i style="width:'+pct+'%;background:'+colorFor(c,i)+'"></i></div></div>';
+  }).join('') : '<div class="paper"><p class="empty-title">'+T('noExpensesTitle')+'</p><p class="muted">'+T('noExpensesSub')+'</p><button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="goTab(\'add\')">'+T('addPurchase')+'</button></div>';
   // Últimas compras
   const recent=filtered.slice(0,3);
   $('verTodasBtn').classList.toggle('hidden', filtered.length<=3);
   $('recentBox').innerHTML = recent.length ? recent.map(x=>
-    '<div class="recent-item"><div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.producto)+'</div><div class="muted small">'+esc(x.suplidor)+' · '+formatDate(x.fecha)+'</div></div><div style="text-align:right;flex-shrink:0"><div class="mono" style="font-weight:700">'+fmt(x.costo)+'</div><div class="small" style="color:var(--accent)">'+esc(x.categoria)+'</div></div></div>'
-  ).join('') : '<p class="muted" style="text-align:center;padding:24px 0">Tus compras aparecerán aquí.</p>';
+    '<div class="recent-item"><div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.producto)+'</div><div class="muted small">'+esc(x.suplidor)+' · '+formatDate(x.fecha)+'</div></div><div style="text-align:right;flex-shrink:0"><div class="mono" style="font-weight:700">'+fmt(x.costo)+'</div><div class="small" style="color:var(--accent)">'+esc(catName(x.categoria))+'</div></div></div>'
+  ).join('') : '<p class="muted" style="text-align:center;padding:24px 0">'+T('recentEmpty')+'</p>';
   renderHistory(filtered);
 }
 function renderHistory(filtered){
@@ -274,13 +501,13 @@ function renderHistory(filtered){
   $('historialVacio').innerHTML='';
   if(!list.length){
     $('lista').innerHTML='';
-    $('historialVacio').innerHTML='<div class="paper"><p class="empty-title">'+(q?'No encontramos coincidencias':'No hay compras registradas')+'</p><p class="muted">'+(q?'Prueba con otro término.':'Todavía no hay compras en '+formatMonth(currentMonthVal())+'.')+'</p>'+(q?'<button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="document.getElementById(\'buscar\').value=\'\';render()">Limpiar búsqueda</button>':'<button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="goTab(\'add\')">Añadir compra</button>')+'</div>';
+    $('historialVacio').innerHTML='<div class="paper"><p class="empty-title">'+(q?T('noMatches'):T('noPurchasesTitle'))+'</p><p class="muted">'+(q?T('tryOther'):T('noPurchasesYet')+formatMonth(currentMonthVal())+'.')+'</p>'+(q?'<button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="document.getElementById(\'buscar\').value=\'\';render()">'+T('clearSearch')+'</button>':'<button class="btn btn-black btn-auto" style="min-height:44px;margin-top:12px" onclick="goTab(\'add\')">'+T('addPurchase')+'</button>')+'</div>';
     return;
   }
   $('lista').innerHTML=list.map(x=>{
-    let h='<article class="purchase"><div style="display:flex;justify-content:space-between;gap:16px"><div style="min-width:0"><p style="font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.producto)+'</p><p class="muted" style="margin:4px 0 0;font-size:14px">'+esc(x.suplidor)+' · '+formatDate(x.fecha)+'</p><div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="pill">'+esc(x.categoria)+'</span><span class="small muted">Cant. '+esc(x.cantidad)+'</span>'+(x.recibo?'<span class="small mono muted">Recibo '+esc(x.recibo)+'</span>':'')+'</div></div><div style="text-align:right;flex-shrink:0"><p class="mono" style="font-size:18px;font-weight:700;margin:0">'+fmt(x.costo)+'</p><button class="btn-danger-text" onclick="askDelete(\''+x.id+'\')">🗑 Eliminar</button></div></div>';
+    let h='<article class="purchase"><div style="display:flex;justify-content:space-between;gap:16px"><div style="min-width:0"><p style="font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.producto)+'</p><p class="muted" style="margin:4px 0 0;font-size:14px">'+esc(x.suplidor)+' · '+formatDate(x.fecha)+'</p><div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="pill">'+esc(catName(x.categoria))+'</span><span class="small muted">'+T('qty')+' '+esc(x.cantidad)+'</span>'+(x.recibo?'<span class="small mono muted">'+T('receiptWord')+' '+esc(x.recibo)+'</span>':'')+'</div></div><div style="text-align:right;flex-shrink:0"><p class="mono" style="font-size:18px;font-weight:700;margin:0">'+fmt(x.costo)+'</p><button class="btn-danger-text" onclick="askDelete(\''+x.id+'\')">'+T('deleteBtn')+'</button></div></div>';
     if(deleteId===x.id){
-      h+='<div class="confirm-box"><span style="font-weight:600;font-size:14px">¿Eliminar esta compra?</span><span class="actions"><button class="btn-cancel" onclick="cancelDelete()">Cancelar</button><button class="btn-confirm-del" onclick="confirmDelete(\''+x.id+'\')">Sí, eliminar</button></span></div>';
+      h+='<div class="confirm-box"><span style="font-weight:600;font-size:14px">'+T('askDeleteQ')+'</span><span class="actions"><button class="btn-cancel" onclick="cancelDelete()">'+T('cancel')+'</button><button class="btn-confirm-del" onclick="confirmDelete(\''+x.id+'\')">'+T('yesDelete')+'</button></span></div>';
     }
     h+='</article>';
     return h;
@@ -288,12 +515,12 @@ function renderHistory(filtered){
 }
 function askDelete(id){ deleteId=id; render(); }
 function cancelDelete(){ deleteId=null; render(); }
-function confirmDelete(id){ data=data.filter(x=>String(x.id)!==String(id)); deleteId=null; if(save()) toast('Compra eliminada'); render(); }
+function confirmDelete(id){ data=data.filter(x=>String(x.id)!==String(id)); deleteId=null; if(save()) toast(T('purchaseDeleted')); render(); }
 </script>
 <script>
 function limpiar(){ window._lastDesglose=null; window._lastMulti=null; if(typeof limpiarMultiAviso==='function') limpiarMultiAviso(); const dw=$('desgloseWrap'); if(dw) dw.classList.add('hidden'); const sg=$('sugerenciaCat'); if(sg){sg.classList.add('hidden'); sg.textContent='';} $('form').reset(); $('fecha').value=localToday(); $('cantidad').value=1; $('formError').classList.add('hidden'); const pv=$('preview'); if(window._previewUrl){ URL.revokeObjectURL(window._previewUrl); window._previewUrl=null; } pv.removeAttribute('src'); pv.classList.add('hidden'); $('ocrText').value=''; $('ocrDetails').classList.add('hidden'); const st=$('ocrStatus'); st.classList.add('hidden'); st.className='hidden'; st.removeAttribute('style'); $('ocrProgWrap').classList.add('hidden'); $('scanError').classList.add('hidden'); }
 function askBorrarTodo(){
-  if(!data.length) return toast('No hay compras registradas');
+  if(!data.length) return toast(T('noPurchases'));
   $('resetConfirm').classList.remove('hidden');
   $('resetTitle').focus?.();
 }
@@ -302,15 +529,15 @@ function confirmBorrarTodo(){
   data=[]; deleteId=null;
   const buscador=$('buscar'); if(buscador) buscador.value='';
   try{ localStorage.removeItem(KEY); }catch(e){}
-  save(); $('resetConfirm').classList.add('hidden'); render(); toast('Todos los gastos fueron borrados');
+  save(); $('resetConfirm').classList.add('hidden'); render(); toast(T('allDeleted'));
 }
 function exportCSV(){
-  if(!data.length){ toast('No hay compras para exportar todavía'); return; }
-  const rows=[['Fecha','Suplidor','Categoría','Producto','Cantidad','Costo','Recibo']];
+  if(!data.length){ toast(T('noExport')); return; }
+  const rows=[[T('csvDate'),T('csvStore'),T('csvCat'),T('csvProduct'),T('csvQty'),T('csvCost'),T('csvReceipt')]];
   data.slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(x=>rows.push([x.fecha,x.suplidor,x.categoria,x.producto,x.cantidad,x.costo,x.recibo||'']));
   const csv=rows.map(r=>r.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})); a.download='mis-gastos-hogar.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-  toast('CSV exportado');
+  toast(T('csvExported'));
 }
 $('form').addEventListener('submit', function(e){
   e.preventDefault();
@@ -319,9 +546,9 @@ $('form').addEventListener('submit', function(e){
     producto:$('producto').value.trim(), cantidad:Number($('cantidad').value||1), costo:Number($('costo').value||0),
     recibo:$('recibo').value.trim() };
   const err=$('formError');
-  if(!item.fecha||!item.suplidor||!item.producto||!(item.costo>0)||!(item.cantidad>0)){ err.textContent='Completa fecha, suplidor y producto, con cantidad y costo total mayores de $0.'; err.classList.remove('hidden'); return; }
+  if(!item.fecha||!item.suplidor||!item.producto||!(item.costo>0)||!(item.cantidad>0)){ err.textContent=T('formError'); err.classList.remove('hidden'); return; }
   err.classList.add('hidden');
-  data.unshift(item); if(!save()){ data.shift(); return; } setMonth(item.fecha.slice(0,7)); limpiar(); goTab('summary'); toast('Compra guardada');
+  data.unshift(item); if(!save()){ data.shift(); return; } setMonth(item.fecha.slice(0,7)); limpiar(); goTab('summary'); toast(T('purchaseSaved'));
 });
 $('monthSummary').addEventListener('change', function(){ setMonth(this.value||localToday().slice(0,7)); deleteId=null; render(); });
 $('monthHistory').addEventListener('change', function(){ setMonth(this.value||localToday().slice(0,7)); deleteId=null; render(); });
@@ -607,8 +834,8 @@ function aplicarRecibo(texto, p, d, opciones){
     const sg = $('sugerenciaCat');
     if(sug.categoria){
       $('categoria').value = sug.categoria;
-      if(sg){ sg.textContent = 'Categoría sugerida: '+sug.categoria+' — revísala en el formulario y confírmala con un toque antes de guardar.'; sg.classList.remove('hidden'); }
-      toast('Categoría sugerida: '+sug.categoria+' — confírmala');
+      if(sg){ sg.textContent = T('suggestedPre')+catName(sug.categoria)+T('suggestedPost'); sg.classList.remove('hidden'); }
+      toast(T('suggestedPre')+catName(sug.categoria)+T('suggestedToastPost'));
     } else if(sg){ sg.classList.add('hidden'); }
   }catch(eCat){}
   // NIVEL 2: desglose por artículo / por categoría
@@ -618,16 +845,16 @@ function aplicarRecibo(texto, p, d, opciones){
       const totD = catsD.reduce(function(sm,c){ return sm + d.porCat[c]; }, 0);
       $('desgloseList').innerHTML = catsD.sort(function(a,b){ return d.porCat[b]-d.porCat[a]; }).map(function(c){
         const pct = totD ? Math.round(d.porCat[c]/totD*100) : 0;
-        return '<div class="recent-item"><span><span class="pill">'+esc(c)+'</span> <span class="muted small">'+pct+'%</span></span><b class="mono">'+fmt(d.porCat[c])+'</b></div>';
-      }).join('') + '<div class="recent-item"><span><strong>Total del desglose</strong> <span class="muted small">('+d.lineas+' artículos leídos)</span></span><b class="mono">'+fmt(totD)+'</b></div>';
-      $('btnGuardarDesglose').textContent = 'Guardar como '+catsD.length+' compras (una por categoría)';
+        return '<div class="recent-item"><span><span class="pill">'+esc(catName(c))+'</span> <span class="muted small">'+pct+'%</span></span><b class="mono">'+fmt(d.porCat[c])+'</b></div>';
+      }).join('') + '<div class="recent-item"><span><strong>'+T('breakdownTotal')+'</strong> <span class="muted small">('+d.lineas+''+T('itemsRead')+'</span></span><b class="mono">'+fmt(totD)+'</b></div>';
+      $('btnGuardarDesglose').textContent = T('saveAsPre')+catsD.length+T('saveAsPost');
       const aviso = $('desgloseAviso');
       if(p.costo && totD < p.costo*0.5){ aviso.classList.remove('hidden'); } else { aviso.classList.add('hidden'); }
       $('desgloseWrap').classList.remove('hidden');
     } else if(catsD.length === 1){
       const c1 = catsD[0];
-      $('desgloseList').innerHTML = '<div class="recent-item"><span><span class="pill">'+esc(c1)+'</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div><div class="recent-item"><span><strong>Total del desglose</strong> <span class="muted small">('+d.lineas+' artículos leídos)</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div>';
-      $('btnGuardarDesglose').textContent = 'Guardar como 1 compra ('+c1+')';
+      $('desgloseList').innerHTML = '<div class="recent-item"><span><span class="pill">'+esc(catName(c1))+'</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div><div class="recent-item"><span><strong>'+T('breakdownTotal')+'</strong> <span class="muted small">('+d.lineas+''+T('itemsRead')+'</span></span><b class="mono">'+fmt(d.porCat[c1])+'</b></div>';
+      $('btnGuardarDesglose').textContent = T('saveAsOnePre')+catName(c1)+')';
       $('desgloseAviso').classList.add('hidden');
       $('desgloseWrap').classList.remove('hidden');
     } else { $('desgloseWrap').classList.add('hidden'); }
@@ -638,10 +865,10 @@ function aplicarRecibo(texto, p, d, opciones){
   if(p.recibo && !$('recibo').value) $('recibo').value = p.recibo;
   status.className = ''; status.style.cssText = 'margin-top:12px;font-size:14px;font-weight:600';
   status.textContent = texto.trim()
-    ? (opciones.estadoFinal || '✅ Datos detectados. Revisa y corrige antes de guardar.')
-    : '⚠️ No se detectó texto. Prueba con más luz y el recibo plano, o llena los datos a mano.';
+    ? (opciones.estadoFinal || T('dataDetected'))
+    : T('noText');
   progWrap.classList.add('hidden');
-  if(texto.trim()) toast(opciones.toastFinal || 'Recibo leído: revisa los datos');
+  if(texto.trim()) toast(opciones.toastFinal || T('receiptRead'));
 }
 let ocrBusy=false;
 function setOcrButtons(disabled){ const b1=$('btnCamera'), b2=$('btnGallery'); if(b1) b1.disabled=disabled; if(b2) b2.disabled=disabled; const b3=$('btnMultiCamera'), b4=$('btnMultiGallery'); if(b3) b3.disabled=disabled; if(b4) b4.disabled=disabled; }
@@ -692,16 +919,16 @@ function loadTesseractOnce(){
 async function handleFile(file){
   if(!file) return;
   const status=$('ocrStatus'), progWrap=$('ocrProgWrap'), bar=$('ocrBar'), err=$('scanError');
-  if(ocrBusy){ err.textContent='Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
+  if(ocrBusy){ err.textContent=T('waitPrev'); err.classList.remove('hidden'); return; }
   err.classList.add('hidden');
   limpiarMultiAviso();
   if(file.size > 20*1024*1024){
-    err.textContent='La foto es demasiado grande (más de 20 MB). Toma la foto de nuevo o elige una más pequeña.';
+    err.textContent=T('photoTooBig');
     err.classList.remove('hidden'); return;
   }
   ocrBusy=true; setOcrButtons(true);
   status.classList.remove('hidden'); status.className='pulse'; status.removeAttribute('style');
-  status.textContent='Leyendo el recibo…';
+  status.textContent=T('reading');
   progWrap.classList.remove('hidden'); bar.style.width='5%';
   const prev=$('preview');
   if(window._previewUrl) URL.revokeObjectURL(window._previewUrl);
@@ -709,19 +936,19 @@ async function handleFile(file){
   prev.onerror=function(){ prev.classList.add('hidden'); };
   try{
     if(typeof Tesseract==='undefined'){
-      status.textContent='Cargando el lector de recibos\u2026 (necesita internet la primera vez)';
+      status.textContent=T('loadingReader');
       await loadTesseractOnce();
     }
     if(typeof Tesseract==='undefined'){
-      throw new Error('lector no cargado: se necesita internet la primera vez que se usa el lector de recibos. Conéctate, recarga la página e inténtalo de nuevo.');
+      throw new Error(T('readerFail'));
     }
     let input=file;
     try{ input=await prepareForOCR(file); }
     catch(decodeErr){
-      if(isHeic(file)) throw new Error('esta foto está en formato HEIC de iPhone y el navegador no la puede leer. En el iPhone: Ajustes > Cámara > Formatos > "Más compatible", o comparte la foto como JPG y elígela desde la galería.');
-      throw new Error('no se pudo abrir esa imagen. Prueba con otra foto del recibo.');
+      if(isHeic(file)) throw new Error(T('heicSingle'));
+      throw new Error(T('openFailSingle'));
     }
-    status.textContent='Leyendo el recibo… (la primera vez tarda más)';
+    status.textContent=T('readingFirst');
     const res=await Tesseract.recognize(input,'eng+spa',{ logger: function(m){ if(m.status==='recognizing text') bar.style.width=Math.round(5+m.progress*95)+'%'; }});
     const text=(res.data && res.data.text)||'';
     $('ocrText').value=text; $('ocrDetails').classList.remove('hidden');
@@ -729,7 +956,7 @@ async function handleFile(file){
     aplicarRecibo(text, p, desglosarRecibo(text), {});
   }catch(e){
     status.classList.add('hidden'); status.className='hidden'; progWrap.classList.add('hidden');
-    err.textContent='No pudimos leer el recibo: '+(e && e.message ? e.message : 'prueba con más luz y el recibo plano, o llena los datos a mano.');
+    err.textContent=T('readFailPre')+(e && e.message ? e.message : T('readFailFallback'));
     err.classList.remove('hidden');
   }finally{
     ocrBusy=false; setOcrButtons(false);
@@ -739,19 +966,19 @@ async function handleFiles(fileList){
   const files = Array.prototype.slice.call(fileList || []);
   if(!files.length) return;
   const status = $('ocrStatus'), progWrap = $('ocrProgWrap'), bar = $('ocrBar'), err = $('scanError');
-  if(ocrBusy){ err.textContent = 'Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
+  if(ocrBusy){ err.textContent = T('waitPrev'); err.classList.remove('hidden'); return; }
   err.classList.add('hidden');
   limpiarMultiAviso();
   let avisoExtra = '';
   let usar = files;
-  if(files.length > 3){ usar = files.slice(0, 3); avisoExtra = 'Seleccionaste '+files.length+' fotos; usé las primeras 3.'; }
+  if(files.length > 3){ usar = files.slice(0, 3); avisoExtra = T('pickedPre')+files.length+T('pickedPost'); }
   if(usar.some(function(f){ return f.size > 20*1024*1024; })){
-    err.textContent = 'Una de las fotos es demasiado grande (más de 20 MB). Toma las fotos de nuevo o elige unas más pequeñas.';
+    err.textContent = T('onePhotoTooBig');
     err.classList.remove('hidden'); return;
   }
   ocrBusy = true; setOcrButtons(true);
   status.classList.remove('hidden'); status.className = 'pulse'; status.removeAttribute('style');
-  status.textContent = 'Leyendo las fotos del recibo…';
+  status.textContent = T('readingPhotos');
   progWrap.classList.remove('hidden'); bar.style.width = '5%';
   const prev = $('preview');
   if(window._previewUrl) URL.revokeObjectURL(window._previewUrl);
@@ -759,25 +986,25 @@ async function handleFiles(fileList){
   prev.onerror = function(){ prev.classList.add('hidden'); };
   try{
     if(typeof Tesseract === 'undefined'){
-      status.textContent = 'Cargando el lector de recibos\u2026 (necesita internet la primera vez)';
+      status.textContent = T('loadingReader');
       await loadTesseractOnce();
     }
     if(typeof Tesseract === 'undefined'){
-      throw new Error('lector no cargado: se necesita internet la primera vez que se usa el lector de recibos. Conéctate, recarga la página e inténtalo de nuevo.');
+      throw new Error(T('readerFail'));
     }
     const textos = [];
     for(let i = 0; i < usar.length; i++){
-      status.textContent = 'Leyendo foto '+(i+1)+' de '+usar.length+'…';
+      status.textContent = T('readingPhotoPre')+(i+1)+T('readingPhotoMid')+usar.length+T('readingPhotoPost');
       let input = usar[i];
       try{ input = await prepareForOCR(usar[i]); }
       catch(decodeErr){
-        if(isHeic(usar[i])) throw new Error('la foto '+(i+1)+' está en formato HEIC de iPhone y el navegador no la puede leer. En el iPhone: Ajustes > Cámara > Formatos > "Más compatible", o comparte la foto como JPG y elígela desde la galería.');
-        throw new Error('no se pudo abrir la foto '+(i+1)+'. Prueba con otra foto del recibo.');
+        if(isHeic(usar[i])) throw new Error(T('heicMultiPre')+(i+1)+T('heicMultiPost'));
+        throw new Error(T('openFailMultiPre')+(i+1)+T('openFailMultiPost'));
       }
       const res = await Tesseract.recognize(input, 'eng+spa', { logger: function(m){ if(m.status === 'recognizing text'){ const base = (i + m.progress)/usar.length; bar.style.width = Math.round(5 + base*95)+'%'; } } });
       textos.push((res.data && res.data.text) || '');
     }
-    $('ocrText').value = textos.map(function(t, i){ return '--- Foto '+(i+1)+' ---\n'+t; }).join('\n\n');
+    $('ocrText').value = textos.map(function(t, i){ return '--- '+T('photoWord')+' '+(i+1)+' ---\n'+t; }).join('\n\n');
     $('ocrDetails').classList.remove('hidden');
     // PRIMERO verificar: mismo recibo. Si no, no se combina nada.
     const comb = combinarRecibos(textos);
@@ -788,19 +1015,19 @@ async function handleFiles(fileList){
       const sgx = $('sugerenciaCat'); if(sgx) sgx.classList.add('hidden');
       status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
       if(comb.motivo === 'números de recibo distintos'){
-        err.textContent = '⚠️ No combiné las fotos: el número de recibo no coincide entre las fotos ('+comb.recibos.join(' y ')+'). Parecen recibos distintos y mezclarlos daría totales incorrectos. Verifica que las '+usar.length+' fotos sean del mismo recibo y vuelve a intentarlo, o escanea una sola foto.';
+        err.textContent = T('mismatchNumPre')+comb.recibos.join(T('andWord'))+T('mismatchNumPost')+usar.length+T('mismatchEnd');
       } else {
-        err.textContent = '⚠️ No combiné las fotos: parecen de recibos distintos. Detecté tiendas diferentes ('+comb.tiendas.join(' y ')+') y mezclarlas daría totales incorrectos. Verifica que las '+usar.length+' fotos sean del mismo recibo y vuelve a intentarlo, o escanea una sola foto.';
+        err.textContent = T('mismatchStorePre')+comb.tiendas.join(T('andWord'))+T('mismatchStorePost')+usar.length+T('mismatchEnd');
       }
       err.classList.remove('hidden');
       return;
     }
     // Avisos del combinado
     const avisos = [];
-    avisos.push('🧾 '+comb.numFotos+' fotos combinadas — fotos del mismo recibo: '+(comb.tienda || 'tienda no identificada'));
-    if(comb.duplicadas > 0) avisos.push('♻️ '+comb.duplicadas+(comb.duplicadas === 1 ? ' línea duplicada ignorada' : ' líneas duplicadas ignoradas')+': se repetía donde las fotos se solapan y se cuenta una sola vez.');
-    else avisos.push('Sin líneas duplicadas entre las fotos.');
-    if(comb.fotosSinTienda > 0) avisos.push('Ojo: en '+comb.fotosSinTienda+' de las fotos no se pudo leer el nombre de la tienda; revisa el desglose antes de guardar.');
+    avisos.push(T('combinedPre')+comb.numFotos+T('combinedMid')+(comb.tienda || T('storeUnknown')));
+    if(comb.duplicadas > 0) avisos.push('♻️ '+comb.duplicadas+(comb.duplicadas === 1 ? T('dupOne') : T('dupMany'))+T('dupPost'));
+    else avisos.push(T('noDups'));
+    if(comb.fotosSinTienda > 0) avisos.push(T('noStorePre')+comb.fotosSinTienda+T('noStorePost'));
     if(avisoExtra) avisos.push(avisoExtra);
     const ma = $('multiAviso');
     ma.innerHTML = avisos.map(function(a){ return '<div>'+esc(a)+'</div>'; }).join('');
@@ -808,12 +1035,12 @@ async function handleFiles(fileList){
     const p = {fecha:comb.fecha, suplidor:comb.suplidor, costo:comb.costo, recibo:comb.recibo};
     const d = {porCat:comb.porCat, lineas:comb.lineas, sinPrecio:comb.sinPrecio};
     aplicarRecibo(comb.textoCombinado, p, d, {
-      estadoFinal: '✅ Datos detectados de '+comb.numFotos+' fotos combinadas. Revisa y corrige antes de guardar.',
-      toastFinal: 'Recibo combinado de '+comb.numFotos+' fotos: revisa los datos'
+      estadoFinal: T('multiDetectedPre')+comb.numFotos+T('multiDetectedPost'),
+      toastFinal: T('multiToastPre')+comb.numFotos+T('multiToastPost')
     });
   }catch(e){
     status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
-    err.textContent = 'No pudimos leer las fotos: '+(e && e.message ? e.message : 'prueba con más luz y el recibo plano, o llena los datos a mano.');
+    err.textContent = T('readPhotosFailPre')+(e && e.message ? e.message : T('readFailFallback'));
     err.classList.remove('hidden');
   }finally{
     ocrBusy = false; setOcrButtons(false);
@@ -821,9 +1048,9 @@ async function handleFiles(fileList){
 }
 function openMultiPicker(inputId){
   const err = $('scanError');
-  if(ocrBusy){ err.textContent = 'Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
+  if(ocrBusy){ err.textContent = T('waitPrev'); err.classList.remove('hidden'); return; }
   const input = $(inputId);
-  if(!input){ err.textContent = 'No se encontró el selector de fotos. Recarga la página e inténtalo de nuevo.'; err.classList.remove('hidden'); return; }
+  if(!input){ err.textContent = T('pickerMissing'); err.classList.remove('hidden'); return; }
   err.classList.add('hidden');
   try{ input.value = ''; }catch(e){}
   input.click();
@@ -841,10 +1068,10 @@ function onMultiPicked(e){
    los botones no hacían absolutamente nada. */
 function openReceiptPicker(inputId){
   const err=$('scanError');
-  if(ocrBusy){ err.textContent='Espera a que termine de leer el recibo anterior.'; err.classList.remove('hidden'); return; }
+  if(ocrBusy){ err.textContent=T('waitPrev'); err.classList.remove('hidden'); return; }
   if($('btnCamera').disabled || $('btnGallery').disabled) setOcrButtons(false);
   const input=$(inputId);
-  if(!input){ err.textContent='No se encontró el selector de fotos. Recarga la página e inténtalo de nuevo.'; err.classList.remove('hidden'); return; }
+  if(!input){ err.textContent=T('pickerMissing'); err.classList.remove('hidden'); return; }
   err.classList.add('hidden');
   try{ input.value=''; }catch(e){}
   input.click();
@@ -858,16 +1085,16 @@ function onReceiptPicked(e){
 // Guardar desglose como N compras (una por categoría, filas normales)
 function guardarDesglose(){
   const d=window._lastDesglose;
-  if(!d || !d.porCat || !Object.keys(d.porCat).length){ toast('No hay desglose para guardar'); return; }
+  if(!d || !d.porCat || !Object.keys(d.porCat).length){ toast(T('noBreakdown')); return; }
   const fecha=$('fecha').value, suplidor=$('suplidor').value.trim(), recibo=$('recibo').value.trim();
-  if(!fecha || !suplidor){ const err=$('formError'); err.textContent='Para guardar el desglose completa fecha y suplidor (la app los detecta del recibo, revísalos).'; err.classList.remove('hidden'); goTab('add'); return; }
+  if(!fecha || !suplidor){ const err=$('formError'); err.textContent=T('breakdownFormError'); err.classList.remove('hidden'); goTab('add'); return; }
   const catsD=Object.keys(d.porCat);
-  const items=catsD.map(function(c,i){ return { id: Date.now().toString(36)+Math.random().toString(36).slice(2,6)+i, fecha:fecha, suplidor:suplidor, categoria:c, producto:'Varias ('+c+')', cantidad:1, costo:Number(d.porCat[c]||0), recibo:recibo }; }).filter(function(x){return x.costo>0;});
-  if(!items.length){ toast('No hay montos en el desglose'); return; }
+  const items=catsD.map(function(c,i){ return { id: Date.now().toString(36)+Math.random().toString(36).slice(2,6)+i, fecha:fecha, suplidor:suplidor, categoria:c, producto:T('various')+' ('+catName(c)+')', cantidad:1, costo:Number(d.porCat[c]||0), recibo:recibo }; }).filter(function(x){return x.costo>0;});
+  if(!items.length){ toast(T('noAmounts')); return; }
   const prevLen=data.length;
   items.forEach(function(it){ data.unshift(it); });
-  if(!save()){ data.splice(0, items.length); toast('No se pudo guardar el desglose'); return; }
-  setMonth(fecha.slice(0,7)); limpiar(); goTab('history'); toast('Desglose guardado como '+items.length+' compras');
+  if(!save()){ data.splice(0, items.length); toast(T('breakdownSaveFail')); return; }
+  setMonth(fecha.slice(0,7)); limpiar(); goTab('history'); toast(T('breakdownSavedPre')+items.length+T('breakdownSavedPost'));
 }
 const btnGD=$('btnGuardarDesglose'); if(btnGD) btnGD.addEventListener('click', guardarDesglose);
 $('btnCamera').addEventListener('click', function(){ openReceiptPicker('fileCamera'); });
@@ -891,5 +1118,90 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   });
 }
 </script>
+
+<style id="temas-css">
+/* ===== Temas cristal: Claro (defecto) y Oscuro ===== */
+:root{ --glass:rgba(255,255,255,.66); --glass-brd:rgba(255,255,255,.78); }
+body{
+  background:
+    radial-gradient(620px 500px at 88% -5%, rgba(224,49,49,.16), rgba(224,49,49,0) 60%),
+    radial-gradient(560px 540px at -12% 32%, rgba(88,140,225,.17), rgba(88,140,225,0) 60%),
+    radial-gradient(500px 430px at 112% 78%, rgba(255,170,60,.13), rgba(255,170,60,0) 60%),
+    linear-gradient(165deg,#fbfcfe 0%,#edf2f8 48%,#f6eeee 100%);
+  background-attachment:fixed; min-height:100vh; padding-bottom:124px;
+  color-scheme:light;
+}
+body.tema-oscuro{
+  --bg:#07070c; --surface:rgba(255,255,255,.08); --text:#f5f5f7;
+  --dim:rgba(255,255,255,.58); --border:rgba(255,255,255,.16);
+  --accent:#ff5147; --accent-dark:#ff7a70; --danger:#ff8585;
+  --shadow:0 18px 42px rgba(0,0,0,.5);
+  --glass:rgba(255,255,255,.07); --glass-brd:rgba(255,255,255,.15);
+  background:
+    radial-gradient(640px 520px at 88% -5%, rgba(217,35,35,.32), rgba(217,35,35,0) 60%),
+    radial-gradient(580px 560px at -12% 34%, rgba(64,76,205,.24), rgba(64,76,205,0) 60%),
+    radial-gradient(500px 430px at 112% 80%, rgba(255,120,50,.12), rgba(255,120,50,0) 60%),
+    linear-gradient(170deg,#0a0a12 0%,#07070c 100%);
+  background-attachment:fixed;
+  color-scheme:dark;
+}
+.card,.purchase,#recentBox{
+  background:var(--glass)!important; border:1px solid var(--glass-brd);
+  -webkit-backdrop-filter:blur(18px) saturate(170%); backdrop-filter:blur(18px) saturate(170%);
+  border-radius:22px;
+}
+#recentBox{ box-shadow:var(--shadow)!important; }
+.paper{ background-color:var(--glass)!important; border:1px solid var(--glass-brd); border-radius:22px;
+  -webkit-backdrop-filter:blur(18px) saturate(170%); backdrop-filter:blur(18px) saturate(170%); }
+body.tema-oscuro .paper{ background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,rgba(255,255,255,.06) 32px); }
+.total-card{
+  background:var(--glass); color:var(--text); border:1px solid var(--glass-brd);
+  -webkit-backdrop-filter:blur(20px) saturate(170%); backdrop-filter:blur(20px) saturate(170%);
+  border-radius:24px;
+}
+.total-card .label{ color:var(--dim); }
+.total-meta{ color:var(--dim); }
+.dist-bar{ background:rgba(127,127,140,.22); }
+body.tema-oscuro .total-card{ color:#fff; }
+body.tema-oscuro .total-card .label, body.tema-oscuro .total-meta{ color:rgba(255,255,255,.65); }
+.btn-red{ background:linear-gradient(140deg,#f0433a,#c81e1e); }
+.btn-outline{ background:var(--glass); color:var(--text); border-color:var(--glass-brd);
+  -webkit-backdrop-filter:blur(14px) saturate(160%); backdrop-filter:blur(14px) saturate(160%); }
+body.tema-oscuro .btn-black{ background:rgba(255,255,255,.16); color:#fff; }
+.field{ background:var(--glass); color:var(--text); border-color:var(--border);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
+.field:focus{ border-color:var(--accent); }
+select.field option{ color:#111; }
+.month-input{ background:var(--glass); color:var(--text); border-color:var(--border); }
+.progress{ background:rgba(127,127,140,.25); }
+.pulse{ background:var(--glass); border:1px solid var(--glass-brd); }
+.pill{ background:var(--glass); border-color:var(--glass-brd); }
+.icon-btn.gray{ background:var(--glass); color:var(--text); border:1px solid var(--glass-brd); }
+body.tema-oscuro .icon-btn.black{ background:rgba(255,255,255,.16); color:#fff; }
+#multiAviso,#sugerenciaCat{ background:rgba(255,241,242,.82)!important; color:#7a0a18; }
+body.tema-oscuro #multiAviso, body.tema-oscuro #sugerenciaCat{ background:rgba(255,81,71,.16)!important; color:#ffd9d6; }
+nav.bottom{
+  left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom));
+  border-radius:24px; border:1px solid var(--glass-brd);
+  background:var(--glass); box-shadow:0 16px 40px rgba(31,38,135,.16);
+  -webkit-backdrop-filter:blur(22px) saturate(170%); backdrop-filter:blur(22px) saturate(170%);
+  padding:8px;
+}
+nav.bottom .inner{ gap:6px; }
+.nav-btn{ border-radius:16px; }
+body.tema-oscuro #toast{ background:#f5f5f7; color:#111; }
+body.tema-oscuro #resetConfirm{ background:var(--glass)!important; border:1px solid var(--glass-brd); border-radius:18px; }
+/* Barra de ajustes: tema + idioma */
+.ajustes-bar{ display:flex; justify-content:flex-end; gap:8px; margin:0 0 14px; }
+.tema-btn,.lang-sel{
+  display:inline-flex; align-items:center; gap:6px; min-height:42px;
+  background:var(--glass); color:var(--text); border:1px solid var(--glass-brd);
+  border-radius:999px; padding:8px 14px; font-weight:600; font-size:14px; cursor:pointer;
+  -webkit-backdrop-filter:blur(14px) saturate(160%); backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:0 8px 22px rgba(31,38,135,.08);
+}
+.lang-sel{ padding-right:10px; }
+.lang-sel option{ color:#111; }
+</style>
 </body>
 </html>
