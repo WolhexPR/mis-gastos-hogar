@@ -699,7 +699,7 @@ var CAT_DICT = {
   '\\batun\\b','\\bsardina','\\bchicharro','\\bjamon\\b','\\bsalchicha',
   '\\bpepperoni\\b','\\btocino\\b','\\bbacon\\b','\\bchorizo\\b','\\blonganiza\\b',
   '\\bembutido','\\bsnack','\\bpapita','\\bchip\\b','\\bpopcorn\\b','\\bpalomita',
-  '\\bdoritos','\\btostitos','\\bcheetos','\\bfritos','\\bnacho','\\bcheese\\b','\\bpringles','\\blays\\b',
+  '\\bdorit','\\btostit','\\bcheet','\\bfritos','\\bnacho','\\bcheese\\b','\\bpringles','\\blays\\b',
   '\\bchocolate\\b','\\bdulce\\b','\\bcaramelo','\\bmenta\\b','\\bchicle\\b',
   '\\bhelado\\b','\\bflan\\b','\\bbizcocho\\b','\\bdeli\\b','\\bpanaderia\\b',
   '\\bfruta','\\bmanzana','\\bguineo','\\bchina\\b','\\bnaranja','\\btoronja',
@@ -798,7 +798,7 @@ function sugerirCategoria(texto){
 /* NIVEL 2 — desglose línea por línea.
  * Líneas de encabezado/totales/impuestos/pago se ignoran.
  * Precio al final de la línea: "DESCRIPCION 4.28" o "2/3.00". */
-var SKIP_LINE = /sub\s*-?\s*total|\bt?otal\b|ahorr|descuento|\bdesc\b|vuelto|cambio|efectivo|\bcash\b|balance|ivu\b|tax\b|impuesto|estatal|statal|municip|reducid|educid|cup[oó]n|visa|master\s*card|debito|credito|gracias|thank|bienvenido|telefono|\btel\b|direccion|horario|cajero|transaccion|\border\b|articulo|cantidad|descripcion/i;
+var SKIP_LINE = /sub\s*-?\s*total|\bt?otal\b|ahorr|descuento|\bdesc\b|vuelto|cambio|efectivo|\bcash\b|balance|ivu\b|tax\b|impuesto|stata|siatal|municip|vunicipa|munich|reducid|educid|ducido|cup[oó]n|visa|master\s*card|debito|credito|tarjeta|\bath\b|athmovil|\bmovil\b|gracias|thank|bienvenido|telefono|\btel\b|direccion|horario|cajero|transaccion|\border\b|articulo|cantidad|descripcion/i;
 function extraerPrecio(linea){
   var m = linea.match(/(\d+)\s*\/\s*(\d+\.\d{2})\s*$/);
   if(m) return parseFloat(m[2]);
@@ -825,6 +825,7 @@ function extraerLineasDetalle(texto){
     if(SKIP_LINE.test(raw)) return;
     var precio = extraerPrecio(raw);
     if(precio===null){ sinPrecio++; return; }
+    if(precio<=0){ return; }
     var desc = raw.replace(/(\d+\s*\/\s*)?(\d+\.\d{2})\s*$/,'').trim();
     if(desc.length<2) return;
     detalle.push({desc:desc, precio:precio, cat:categorizarLinea(desc), clave:claveLineaRecibo(desc,precio)});
@@ -849,7 +850,7 @@ if(typeof module!=='undefined' && module.exports){
 /* === Fin módulo categorización === */
 function esLineaPago(l){ return /cash|efectivo|cambio|vuelto|\bchange\b|tendered|recibid|ath\b|tarjeta|visa|master/i.test(l || ''); }
 function montoEn(l){ const m = (l || '').match(/(\d{1,3}(?:,\d{3})*\.\d{2}|\d+\.\d{2})/); return m ? parseFloat(m[1].replace(/,/g, '')) : 0; }
-function montoTrasPalabra(l, re){ const m = (l || '').match(re); if(!m) return 0; const resto = (l || '').slice(m.index + m[0].length); const a = resto.match(/(\d{1,3}(?:,\d{3})*\.\d{2}|\d+\.\d{2})/); return a ? parseFloat(a[1].replace(/,/g, '')) : 0; }
+function montoTrasPalabra(l, re){ const m = (l || '').match(re); if(!m) return 0; const resto = (l || '').slice(m.index + m[0].length); const a = resto.match(/(\d{1,3}(?:,\d{3})*\.\d{2}|\d+\.\d{2})/); if(a) return parseFloat(a[1].replace(/,/g, '')); const b = resto.match(/\$\s*(\d{1,3})\s(\d{2})\b/); return b ? parseFloat(b[1] + '.' + b[2]) : 0; }
 /* Total de un recibo desde sus líneas: nunca de líneas de pago (Cash/Cambio),
  * acepta "otal" sin T (el OCR a veces se la come) y si no hay total usa
  * Sub Total + impuestos. Devuelve 0 si no encuentra nada usable. */
@@ -857,11 +858,20 @@ function totalDesdeLineas(lines){
   let sub = 0, impuestos = 0; const totales = [];
   (lines || []).forEach(function(l){
     if(esLineaPago(l)) return;
-    const esSub = /sub\s*-?\s*t?otal/i.test(l);
-    const esTot = !esSub && /(^|[^a-záéíóú])t?otal/i.test(l);
-    if(esSub){ const v = montoTrasPalabra(l, /sub\s*-?\s*t?otal/i) || montoEn(l); if(v) sub = v; return; }
-    if(esTot){ const v = montoTrasPalabra(l, /t?otal/i) || montoEn(l); if(v) totales.push(v); return; }
-    if(/ivu|impuest|\btax\b|estatal|statal|municip|reducid|educid/i.test(l)) impuestos += montoEn(l);
+    // Todas las menciones de (sub)total en la línea: a veces vienen juntas
+    // ("SUBTOTAL 6.00 IVU 0.69 TOTAL 6.69") y hay que leerlas todas.
+    const reT = /(sub\s*-?\s*)?t?otal/ig; let mm2, hubo = false;
+    while((mm2 = reT.exec(l)) !== null){
+      hubo = true;
+      const resto = l.slice(mm2.index + mm2[0].length);
+      const a = resto.match(/(\d{1,3}(?:,\d{3})*\.\d{2}|\d+\.\d{2})/);
+      let v = a ? parseFloat(a[1].replace(/,/g, '')) : 0;
+      if(!v){ const b = resto.match(/\$\s*(\d{1,3})\s(\d{2})\b/); if(b) v = parseFloat(b[1] + '.' + b[2]); }
+      if(!v) continue;
+      if(mm2[1]) sub = v; else totales.push(v);
+    }
+    if(hubo) return;
+    if(/ivu|impuest|\btax\b|stata|siatal|municip|vunicipa|munich|reducid|educid|ducido/i.test(l)) impuestos += montoEn(l);
   });
   if(totales.length){
     if(sub){
@@ -896,9 +906,9 @@ function parseReceipt(text){
   costo = totalDesdeLineas(lines);
   if(!costo){ const limpios = montosFueraDePago(lines); costo = limpios.length ? Math.max.apply(null, limpios) : (money.length ? Math.max.apply(null, money) : 0); }
   const known=['costco','sam','econo','pueblo','walmart','amigo','selectos','ralph','walgreens','cvs','sunoco','texaco','shell','esso','gulf','puma'];
-  let suplidor=lines.find(l=>known.some(k=>l.toLowerCase().includes(k))) || lines[0] || '';
+  let suplidor=lines.find(l=>known.some(k=>l.toLowerCase().includes(k))) || lines.find(l=>/unoco/i.test(l)) || lines[0] || '';
   suplidor=suplidor.replace(/[^a-zA-ZáéíóúñÑ\s'\.]/g,'').trim().slice(0,40);
-  if(/sam/i.test(suplidor)) suplidor="Sam's Club"; else if(/costco/i.test(suplidor)) suplidor='Costco'; else if(/econo/i.test(suplidor)) suplidor='Econo'; else if(/walmart/i.test(suplidor)) suplidor='Walmart'; else if(/sunoco/i.test(suplidor)) suplidor='Sunoco'; else if(/texaco/i.test(suplidor)) suplidor='Texaco';
+  if(/sam/i.test(suplidor)) suplidor="Sam's Club"; else if(/costco/i.test(suplidor)) suplidor='Costco'; else if(/econo/i.test(suplidor)) suplidor='Econo'; else if(/walmart/i.test(suplidor)) suplidor='Walmart'; else if(/sunoco/i.test(suplidor)) suplidor='Sunoco'; else if(/unoco/i.test(suplidor)) suplidor='Sunoco'; else if(/texaco/i.test(suplidor)) suplidor='Texaco';
   let recibo=''; const rm=t.match(/(?:recibo|receipt|orden|order|transacci[oó]n|#)\s*[:#]?\s*([A-Z0-9\-]{4,})/i); if(rm) recibo=rm[1];
   return {fecha:fecha, suplidor:suplidor, costo:costo, recibo:recibo};
 }
@@ -908,6 +918,7 @@ function tiendaCanonica(nombre){
   var known = ['costco','sams club','econo','pueblo','walmart','selectos','ralph','walgreens','cvs','amigo','sunoco','texaco','shell','esso','gulf','puma'];
   for(var i=0;i<known.length;i++){ if(t.indexOf(known[i])>=0) return known[i]; }
   if(t.indexOf('sam')>=0) return 'sams club';
+  if(t.indexOf('unoco')>=0) return 'sunoco';
   return t.replace(/\b(wholesale|supercenter|supermercado|supermarket|club|inc|llc)\b/g,'').replace(/\s+/g,' ').trim();
 }
 /* Junta los textos OCR de 2-3 fotos como UN solo recibo.
