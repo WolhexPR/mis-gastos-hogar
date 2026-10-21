@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Mis Gastos">
-<title>Mis Gastos del Hogar</title>
+<title>SnapSpend</title>
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
@@ -111,7 +111,7 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
       <option value="en">🇺🇸 English</option>
     </select>
   </div>
-  <div class="brand-bar"><img src="icon-192.png" alt="" class="brand-logo"><div><div class="brand-name">Mis Gastos del Hogar</div><div class="brand-tag" data-i18n="brandTag">Tu dinero, en orden</div></div></div>
+  <div class="brand-bar"><img src="icon-192.png" alt="" class="brand-logo"><div><div class="brand-name">SnapSpend</div><div class="brand-tag" data-i18n="brandTag">Tu dinero, en orden</div></div></div>
   <!-- RESUMEN -->
   <section id="tab-summary">
     <div class="section-head">
@@ -269,7 +269,7 @@ try{ LANG = localStorage.getItem(LANG_KEY) || 'es'; TEMA = localStorage.getItem(
 if(LANG!=='en') LANG='es'; if(TEMA!=='oscuro') TEMA='claro';
 var STR = {
 es: {
-  appTitle:'Mis Gastos del Hogar', eyebrowBalance:'Balance del hogar', h1Summary:'Tu mes, de un vistazo',
+  appTitle:'SnapSpend', eyebrowBalance:'Balance del hogar', h1Summary:'Tu mes, de un vistazo',
   monthSelect:'Seleccionar mes', addPurchaseBtn:'＋ Registrar compra', byCategory:'Por categoría',
   latestPurchases:'Últimas compras', viewAll:'Ver todas', addEyebrow:'Nueva compra',
   addH1:'Del recibo a tus cuentas', addSub:'Toma una foto o llena los datos. Siempre podrás revisar todo antes de guardar.',
@@ -347,7 +347,7 @@ es: {
   multiToastPre:'Recibo combinado de ', multiToastPost:' fotos: revisa los datos', andWord:' y '
 },
 en: {
-  appTitle:'My Household Expenses', eyebrowBalance:'Home balance', h1Summary:'Your month at a glance',
+  appTitle:'SnapSpend', eyebrowBalance:'Home balance', h1Summary:'Your month at a glance',
   monthSelect:'Select month', addPurchaseBtn:'＋ Add purchase', byCategory:'By category',
   latestPurchases:'Latest purchases', viewAll:'View all', addEyebrow:'New purchase',
   addH1:'From receipt to your books', addSub:'Take a photo or fill in the details. You can always review everything before saving.',
@@ -585,7 +585,7 @@ function exportCSV(){
   const rows=[[T('csvDate'),T('csvStore'),T('csvCat'),T('csvProduct'),T('csvQty'),T('csvCost'),T('csvReceipt')]];
   data.slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(x=>rows.push([x.fecha,x.suplidor,x.categoria,x.producto,x.cantidad,x.costo,x.recibo||'']));
   const csv=rows.map(r=>r.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})); a.download='mis-gastos-hogar.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})); a.download='snapspend.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   toast(T('csvExported'));
 }
 $('form').addEventListener('submit', function(e){
@@ -655,7 +655,7 @@ const buscarPrecioEl=$('buscarPrecio'); if(buscarPrecioEl) buscarPrecioEl.addEve
 <script>
 /* OCR con Tesseract.js */
 /* === Categorización automática (módulo probado 14/14) === */
-/* Categorización automática de recibos — Mis Gastos del Hogar
+/* Categorización automática de recibos — SnapSpend
  * Módulo sin DOM: se puede probar con node y pegarse tal cual en index.html
  * (antes del cierre del bloque principal). Categorías = las del selector
  * de la app: Alimentos, Proteínas, Limpieza, Higiene, Bebidas, Hogar, Otros.

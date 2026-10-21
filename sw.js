@@ -1,10 +1,10 @@
-/* Mis Gastos del Hogar — Service Worker
+/* SnapSpend — Service Worker
    Cachea la app y el lector de recibos (Tesseract.js) para que funcione
    offline después de la primera carga. Nunca envía ni guarda datos del
    usuario: los gastos viven solo en localStorage del teléfono
    (llave gastos_hogar_v1) y este archivo no los toca. */
 
-const VERSION = 'v10';
+const VERSION = 'v11';
 const STATIC_CACHE = 'mis-gastos-static-' + VERSION;
 const RUNTIME_CACHE = 'mis-gastos-runtime-' + VERSION;
 
