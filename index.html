@@ -123,6 +123,7 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
       <p class="total-amount mono" id="totalMes">$0.00</p>
       <div class="dist-bar" id="distBar" aria-label="Distribución por categoría"></div>
       <div class="total-meta"><span id="countMes">0 compras</span><span class="mono" id="catCount">0 categorías</span></div>
+      <p id="mesComparacion" class="hidden" style="margin:12px 0 0;font-size:14px;font-weight:600"></p>
     </div>
     <button class="btn btn-red btn-auto" style="margin-top:20px" onclick="goTab('add')" data-i18n="addPurchaseBtn">＋ Registrar compra</button>
     <div id="presAlert" class="hidden"></div>
@@ -196,6 +197,11 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
         <p class="muted small" style="margin-top:8px" data-i18n="breakdownNote">Al guardar el desglose se crea una compra por cada categoría, con la misma fecha, suplidor y número de recibo. Cada una se verá por separado en el Historial y en el CSV.</p>
       </div>
     </div>
+    <div id="editandoBar" class="hidden" style="margin-top:24px;background:var(--glass);border:1px solid var(--glass-brd);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <span style="font-weight:600;font-size:14.5px">✏️ <span data-i18n="editingPre">Editando:</span> <span id="editandoNombre"></span></span>
+      <button type="button" class="btn btn-outline" style="min-height:40px" onclick="cancelarEdicion(false)"><span data-i18n="cancelEdit">Cancelar edición</span></button>
+    </div>
+    <p id="dupReciboAviso" class="hidden" style="color:var(--danger);font-weight:600;font-size:14.5px;margin-top:16px"></p>
     <form id="form" style="margin-top:24px">
       <div class="grid2">
         <div><label class="field-label" for="fecha" data-i18n="fDate">Fecha<span class="req">*</span></label><input type="date" id="fecha" class="field" required></div>
@@ -207,7 +213,7 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
       </div>
       <div style="margin-top:16px"><label class="field-label" for="recibo" data-i18n="fReceipt">Número de recibo<span class="hint">Opcional</span></label><input id="recibo" class="field mono" data-i18n-ph="receiptPh" placeholder="Ej. 004812"></div>
       <p id="formError" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px" role="alert"></p>
-      <button type="submit" class="btn btn-red" style="margin-top:20px" data-i18n="savePurchase">✓ Guardar compra</button>
+      <button type="submit" id="btnGuardarCompra" class="btn btn-red" style="margin-top:20px" data-i18n="savePurchase">✓ Guardar compra</button>
       <button type="button" class="btn btn-outline" style="margin-top:10px" onclick="limpiar()" data-i18n="clearForm">Limpiar formulario</button>
     </form>
   </section>
@@ -223,6 +229,7 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
       <button class="btn btn-outline" style="min-height:44px;font-size:14px" onclick="exportCSV()" data-i18n="exportCsv">Exportar CSV</button>
+      <button class="btn btn-outline" style="min-height:44px;font-size:14px" onclick="document.getElementById('fileCSV').click()" data-i18n="importCsv">Importar CSV</button>
       <button class="btn btn-outline" style="min-height:44px;font-size:14px;color:var(--danger);border-color:var(--danger)" onclick="askBorrarTodo()" data-i18n="deleteAll">Borrar todo</button>
     </div>
     <div id="resetConfirm" class="confirm-box hidden" role="alertdialog" aria-labelledby="resetTitle" aria-describedby="resetDetail" style="background:var(--surface);box-shadow:0 8px 30px rgba(0,0,0,.08);padding:16px;margin-top:12px;border-top:0">
@@ -261,6 +268,16 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
     </div>
     <div id="preciosBox" style="margin-top:20px"></div>
   </section>
+  <div class="paper" style="margin-top:28px">
+    <h3 style="margin:0 0 6px" data-i18n="dataTitle">Tus datos y respaldo</h3>
+    <p class="muted small" style="margin:0" data-i18n="dataSub">Descarga un respaldo completo (compras, presupuestos, fijos y precios) y restáuralo cuando quieras: al cambiar de teléfono o si algo se borra.</p>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button type="button" class="btn btn-outline" style="min-height:46px;flex:1" onclick="descargarRespaldo()" data-i18n="backupDownload">⬇️ Descargar respaldo</button>
+      <label class="btn btn-outline" style="min-height:46px;flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer" for="fileRespaldo" data-i18n="backupRestore">⬆️ Restaurar respaldo</label>
+    </div>
+    <input type="file" id="fileRespaldo" accept=".json,application/json" class="file-hidden" tabindex="-1" aria-hidden="true" onchange="onRespaldoFile(this)">
+    <input type="file" id="fileCSV" accept=".csv,text/csv" class="file-hidden" tabindex="-1" aria-hidden="true" onchange="onCSVFile(this)">
+  </div>
   <p class="footer-note" data-i18n-html="footerNote">Tus datos se guardan en este teléfono (almacenamiento del navegador).<br>Sin servidor, sin cuenta. Haz una copia con Exportar CSV cuando quieras.</p>
 </main>
 <nav class="bottom" aria-label="Navegación principal"><div class="inner">
@@ -303,7 +320,7 @@ es: {
   navSummary:'Resumen', navAdd:'Añadir', navHistory:'Historial', navFixed:'Fijos', navPrices:'Precios', brandTag:'Tu dinero, en orden', catLabel:'Categoría',
   budgetsBtn:'Presupuestos', budgetsTitle:'Presupuesto mensual por categoría', budgetsSub:'Pon un límite por categoría y la app te avisa al llegar al 80% y si te pasas. Deja en 0 o vacío para no usarlo.', saveBudgetsBtn:'Guardar presupuestos', budgetsSaved:'Presupuestos guardados', budgetWord:'Presupuesto', budgetOf:'de', budgetNear:'cerca del límite', budgetOverShort:'¡pasado!',
   fixedEyebrow:'Cada mes, sin falta', fixedH1:'Gastos fijos', fixedSub:'Renta, luz, internet, suscripciones… Se añaden solos el día que tocan cada mes, y en el Resumen te aviso cuando uno está por vencer.', fixedName:'Nombre', fixedNamePh:'Ej. Renta, Internet, Luz', fixedAmount:'Monto $', fixedDay:'Día del mes (1-31)', fixedAdd:'＋ Añadir gasto fijo', fixedFormError:'Escribe el nombre y un monto mayor que 0.', fixedSaved:'Gasto fijo guardado', fixedDeleted:'Gasto fijo eliminado', fixedStore:'Gasto fijo', fixedEmptyTitle:'No tienes gastos fijos todavía', fixedEmptySub:'Añade el primero arriba: la renta, el plan del teléfono, lo que pagas cada mes.', dueDayWord:'Día', ofEachMonth:'de cada mes', nextDue:'próximo', appliedThisMonth:'ya aplicado este mes', dueToday:'¡vence hoy!', dueTomorrow:'vence mañana', dueInPre:'vence en ', dueInDays:'días', upcomingTitle:'Próximos vencimientos', pauseBtn:'Pausar', resumeBtn:'Reanudar', pausedWord:'pausado',
-  pricesEyebrow:'Compara y ahorra', pricesH1:'Precios por tienda', pricesSub:'Con los artículos de tus recibos escaneados y tus compras registradas, aquí ves en qué tienda te salió más barato cada producto.', pricesSearchPh:'Buscar producto (ej. leche)', pricesEmptyTitle:'Todavía no hay productos para comparar', pricesEmptySub:'Cuando escanees recibos (el desglose guarda los artículos) o registres el mismo producto en dos tiendas distintas, la comparación aparece aquí sola.', pricesNoMatchTitle:'Sin resultados', pricesNoMatchSub:'Ningún producto comparado coincide con esa búsqueda.', youSave:'Ahorras', pendPre:'🧾 Tienes ', pendOne:' foto leída', pendMany:' fotos leídas', pendPost:' de este recibo. Añade las que falten con los botones de varias fotos y, cuando estén todas, pulsa Combinar.', combineNowBtn:'Combinar recibo', pendFull:'Ya tienes 3 fotos para este recibo: pulsa Combinar, o cancela para empezar de nuevo.', photoAddedToast:'Foto añadida', multiCancelled:'Fotos descartadas', breakdownOverWarn:'⚠️ Ojo: el desglose suma MÁS que el total que leí del recibo. Revisa los artículos antes de guardar.', fixedStartNote:'Los cargos empiezan en el próximo vencimiento: la app no añade meses que ya pasaron.', temaClaro:'Claro', temaOscuro:'Oscuro',
+  pricesEyebrow:'Compara y ahorra', pricesH1:'Precios por tienda', pricesSub:'Con los artículos de tus recibos escaneados y tus compras registradas, aquí ves en qué tienda te salió más barato cada producto.', pricesSearchPh:'Buscar producto (ej. leche)', pricesEmptyTitle:'Todavía no hay productos para comparar', pricesEmptySub:'Cuando escanees recibos (el desglose guarda los artículos) o registres el mismo producto en dos tiendas distintas, la comparación aparece aquí sola.', pricesNoMatchTitle:'Sin resultados', pricesNoMatchSub:'Ningún producto comparado coincide con esa búsqueda.', youSave:'Ahorras', pendPre:'🧾 Tienes ', pendOne:' foto leída', pendMany:' fotos leídas', pendPost:' de este recibo. Añade las que falten con los botones de varias fotos y, cuando estén todas, pulsa Combinar.', combineNowBtn:'Combinar recibo', pendFull:'Ya tienes 3 fotos para este recibo: pulsa Combinar, o cancela para empezar de nuevo.', photoAddedToast:'Foto añadida', multiCancelled:'Fotos descartadas', breakdownOverWarn:'⚠️ Ojo: el desglose suma MÁS que el total que leí del recibo. Revisa los artículos antes de guardar.', fixedStartNote:'Los cargos empiezan en el próximo vencimiento: la app no añade meses que ya pasaron.', dataTitle:'Tus datos y respaldo', dataSub:'Descarga un respaldo completo (compras, presupuestos, fijos y precios) y restáuralo cuando quieras: al cambiar de teléfono o si algo se borra.', backupDownload:'⬇️ Descargar respaldo', backupRestore:'⬆️ Restaurar respaldo', backupBad:'Ese archivo no es un respaldo válido de SnapSpend.', backupReplaceQ:'Restaurar este respaldo REEMPLAZA todos tus datos actuales por los del archivo. ¿Seguro que quieres continuar?', backupRestored:'Respaldo restaurado', backupSaved:'Respaldo descargado', editBtn:'Editar', editingPre:'Editando:', cancelEdit:'Cancelar edición', purchaseUpdated:'Compra actualizada', saveChanges:'✓ Guardar cambios', dupWarnPre:'Ojo: el recibo', dupWarnMid:'ya lo guardaste el', dupWarnPost:'Revisa que no estés guardando un duplicado.', importCsv:'Importar CSV', csvImpDone:'Importadas', csvImpDup:'duplicadas saltadas', csvImpBad:'filas con error', csvImpNone:'No encontré compras válidas en ese archivo.', cmpWith:'Comparado con', cmpSame:'gastaste lo mismo que ese mes', cmpMore:'más que ese mes', cmpLess:'menos que ese mes', temaClaro:'Claro', temaOscuro:'Oscuro',
   spentIn:'Gastado en ', purchaseOne:' compra', purchaseMany:' compras', catOne:' categoría', catMany:' categorías',
   noExpensesTitle:'Aún no hay gastos este mes', noExpensesSub:'Registra tu primera compra para ver el desglose.',
   addPurchase:'Añadir compra', recentEmpty:'Tus compras aparecerán aquí.',
@@ -381,7 +398,7 @@ en: {
   navSummary:'Summary', navAdd:'Add', navHistory:'History', navFixed:'Fixed', navPrices:'Prices', brandTag:'Your money, in order', catLabel:'Category',
   budgetsBtn:'Budgets', budgetsTitle:'Monthly budget by category', budgetsSub:'Set a limit per category and the app warns you at 80% and if you go over. Leave 0 or empty to skip a category.', saveBudgetsBtn:'Save budgets', budgetsSaved:'Budgets saved', budgetWord:'Budget', budgetOf:'of', budgetNear:'close to the limit', budgetOverShort:'over!',
   fixedEyebrow:'Every month, no fail', fixedH1:'Fixed expenses', fixedSub:'Rent, power, internet, subscriptions… They are added automatically on their day each month, and the Summary warns you when one is coming due.', fixedName:'Name', fixedNamePh:'E.g. Rent, Internet, Power', fixedAmount:'Amount $', fixedDay:'Day of month (1-31)', fixedAdd:'+ Add fixed expense', fixedFormError:'Enter a name and an amount over 0.', fixedSaved:'Fixed expense saved', fixedDeleted:'Fixed expense deleted', fixedStore:'Fixed expense', fixedEmptyTitle:'No fixed expenses yet', fixedEmptySub:'Add the first one above: rent, phone plan, whatever you pay every month.', dueDayWord:'Day', ofEachMonth:'of each month', nextDue:'next', appliedThisMonth:'applied this month', dueToday:'due today!', dueTomorrow:'due tomorrow', dueInPre:'due in ', dueInDays:'days', upcomingTitle:'Coming due', pauseBtn:'Pause', resumeBtn:'Resume', pausedWord:'paused',
-  pricesEyebrow:'Compare and save', pricesH1:'Prices by store', pricesSub:'From the items on your scanned receipts and your logged purchases, here you see which store gave you the best price for each product.', pricesSearchPh:'Search product (e.g. milk)', pricesEmptyTitle:'No products to compare yet', pricesEmptySub:'Once you scan receipts (the breakdown saves the items) or log the same product at two different stores, the comparison shows up here on its own.', pricesNoMatchTitle:'No results', pricesNoMatchSub:'No compared product matches that search.', youSave:'You save', pendPre:'🧾 You have ', pendOne:' photo read', pendMany:' photos read', pendPost:' for this receipt. Add the missing ones with the multi-photo buttons and, when all are in, tap Combine.', combineNowBtn:'Combine receipt', pendFull:'You already have 3 photos for this receipt: tap Combine, or cancel to start over.', photoAddedToast:'Photo added', multiCancelled:'Photos discarded', breakdownOverWarn:'⚠️ Heads up: the breakdown adds up to MORE than the receipt total I read. Check the items before saving.', fixedStartNote:'Charges start at the next due date: the app never adds months that already passed.', temaClaro:'Light', temaOscuro:'Dark',
+  pricesEyebrow:'Compare and save', pricesH1:'Prices by store', pricesSub:'From the items on your scanned receipts and your logged purchases, here you see which store gave you the best price for each product.', pricesSearchPh:'Search product (e.g. milk)', pricesEmptyTitle:'No products to compare yet', pricesEmptySub:'Once you scan receipts (the breakdown saves the items) or log the same product at two different stores, the comparison shows up here on its own.', pricesNoMatchTitle:'No results', pricesNoMatchSub:'No compared product matches that search.', youSave:'You save', pendPre:'🧾 You have ', pendOne:' photo read', pendMany:' photos read', pendPost:' for this receipt. Add the missing ones with the multi-photo buttons and, when all are in, tap Combine.', combineNowBtn:'Combine receipt', pendFull:'You already have 3 photos for this receipt: tap Combine, or cancel to start over.', photoAddedToast:'Photo added', multiCancelled:'Photos discarded', breakdownOverWarn:'⚠️ Heads up: the breakdown adds up to MORE than the receipt total I read. Check the items before saving.', fixedStartNote:'Charges start at the next due date: the app never adds months that already passed.', dataTitle:'Your data & backup', dataSub:'Download a full backup (purchases, budgets, fixed expenses and prices) and restore it whenever you want: when switching phones or if something gets deleted.', backupDownload:'⬇️ Download backup', backupRestore:'⬆️ Restore backup', backupBad:'That file is not a valid SnapSpend backup.', backupReplaceQ:'Restoring this backup REPLACES all your current data with the file’s data. Are you sure you want to continue?', backupRestored:'Backup restored', backupSaved:'Backup downloaded', editBtn:'Edit', editingPre:'Editing:', cancelEdit:'Cancel editing', purchaseUpdated:'Purchase updated', saveChanges:'✓ Save changes', dupWarnPre:'Heads up: receipt', dupWarnMid:'was already saved on', dupWarnPost:'Check that you are not saving a duplicate.', importCsv:'Import CSV', csvImpDone:'Imported', csvImpDup:'duplicates skipped', csvImpBad:'rows with errors', csvImpNone:'I found no valid purchases in that file.', cmpWith:'Compared with', cmpSame:'you spent the same as that month', cmpMore:'more than that month', cmpLess:'less than that month', temaClaro:'Light', temaOscuro:'Dark',
   spentIn:'Spent in ', purchaseOne:' purchase', purchaseMany:' purchases', catOne:' category', catMany:' categories',
   noExpensesTitle:'No expenses yet this month', noExpensesSub:'Add your first purchase to see the breakdown.',
   addPurchase:'Add purchase', recentEmpty:'Your purchases will appear here.',
@@ -534,6 +551,7 @@ function render(){
   $('totalLabel').textContent=T('spentIn')+formatMonth(mk);
   $('totalMes').textContent=fmt(total);
   $('countMes').textContent=filtered.length+(filtered.length===1?T('purchaseOne'):T('purchaseMany'));
+  try{ const cmpEl=$('mesComparacion'); if(cmpEl){ const mkPrev=prevMkDe(mk); const prevTotal=data.filter(x=>(x.fecha||'').slice(0,7)===mkPrev).reduce(function(s2,x2){ return s2+Number(x2.costo||0); },0); if(prevTotal>0){ const dif=Math.round((total-prevTotal)*100)/100; const pct=Math.round(Math.abs(dif)/prevTotal*100); cmpEl.textContent=T('cmpWith')+' '+formatMonth(mkPrev)+': '+(dif===0?T('cmpSame'):fmt(Math.abs(dif))+' '+(dif>0?T('cmpMore'):T('cmpLess'))+' ('+pct+'%)'); cmpEl.classList.remove('hidden'); } else cmpEl.classList.add('hidden'); } }catch(eCmp){}
   $('catMonthLabel').textContent=formatMonth(mk);
   const byCat={}; filtered.forEach(x=>{ byCat[x.categoria]=(byCat[x.categoria]||0)+Number(x.costo||0); });
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
@@ -562,7 +580,7 @@ function renderHistory(filtered){
     return;
   }
   $('lista').innerHTML=list.map(x=>{
-    let h='<article class="purchase"><div style="display:flex;justify-content:space-between;gap:16px"><div style="min-width:0"><p style="font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.producto)+'</p><p class="muted" style="margin:4px 0 0;font-size:14px">'+esc(x.suplidor)+' · '+formatDate(x.fecha)+'</p><div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="pill">'+esc(catName(x.categoria))+'</span><span class="small muted">'+T('qty')+' '+esc(x.cantidad)+'</span>'+(x.recibo?'<span class="small mono muted">'+T('receiptWord')+' '+esc(x.recibo)+'</span>':'')+'</div></div><div style="text-align:right;flex-shrink:0"><p class="mono" style="font-size:18px;font-weight:700;margin:0">'+fmt(x.costo)+'</p><button class="btn-danger-text" onclick="askDelete(\''+x.id+'\')">'+T('deleteBtn')+'</button></div></div>';
+    let h='<article class="purchase"><div style="display:flex;justify-content:space-between;gap:16px"><div style="min-width:0"><p style="font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(x.producto)+'</p><p class="muted" style="margin:4px 0 0;font-size:14px">'+esc(x.suplidor)+' · '+formatDate(x.fecha)+'</p><div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="pill">'+esc(catName(x.categoria))+'</span><span class="small muted">'+T('qty')+' '+esc(x.cantidad)+'</span>'+(x.recibo?'<span class="small mono muted">'+T('receiptWord')+' '+esc(x.recibo)+'</span>':'')+'</div></div><div style="text-align:right;flex-shrink:0"><p class="mono" style="font-size:18px;font-weight:700;margin:0">'+fmt(x.costo)+'</p><button class="btn-danger-text" style="color:#60a5fa;margin-right:12px" onclick="iniciarEdicion(\''+x.id+'\')">'+T('editBtn')+'</button><button class="btn-danger-text" onclick="askDelete(\''+x.id+'\')">'+T('deleteBtn')+'</button></div></div>';
     if(deleteId===x.id){
       h+='<div class="confirm-box"><span style="font-weight:600;font-size:14px">'+T('askDeleteQ')+'</span><span class="actions"><button class="btn-cancel" onclick="cancelDelete()">'+T('cancel')+'</button><button class="btn-confirm-del" onclick="confirmDelete(\''+x.id+'\')">'+T('yesDelete')+'</button></span></div>';
     }
@@ -575,7 +593,7 @@ function cancelDelete(){ deleteId=null; render(); }
 function confirmDelete(id){ data=data.filter(x=>String(x.id)!==String(id)); deleteId=null; if(save()) toast(T('purchaseDeleted')); render(); }
 </script>
 <script>
-function limpiar(){ window._lastDesglose=null; window._lastMulti=null; if(typeof limpiarMultiAviso==='function') limpiarMultiAviso(); const dw=$('desgloseWrap'); if(dw) dw.classList.add('hidden'); const avSo=$('desgloseAvisoSobre'); if(avSo) avSo.classList.add('hidden'); if(typeof cancelarPendientes==='function') cancelarPendientes(true); const sg=$('sugerenciaCat'); if(sg){sg.classList.add('hidden'); sg.textContent='';} $('form').reset(); $('fecha').value=localToday(); $('cantidad').value=1; $('formError').classList.add('hidden'); const pv=$('preview'); if(window._previewUrl){ URL.revokeObjectURL(window._previewUrl); window._previewUrl=null; } pv.removeAttribute('src'); pv.classList.add('hidden'); $('ocrText').value=''; $('ocrDetails').classList.add('hidden'); const st=$('ocrStatus'); st.classList.add('hidden'); st.className='hidden'; st.removeAttribute('style'); $('ocrProgWrap').classList.add('hidden'); $('scanError').classList.add('hidden'); }
+function limpiar(){ window._lastDesglose=null; window._lastMulti=null; if(typeof limpiarMultiAviso==='function') limpiarMultiAviso(); const dw=$('desgloseWrap'); if(dw) dw.classList.add('hidden'); const avSo=$('desgloseAvisoSobre'); if(avSo) avSo.classList.add('hidden'); if(typeof cancelarPendientes==='function') cancelarPendientes(true); if(typeof cancelarEdicion==='function') cancelarEdicion(true); const dupAv=$('dupReciboAviso'); if(dupAv) dupAv.classList.add('hidden'); const sg=$('sugerenciaCat'); if(sg){sg.classList.add('hidden'); sg.textContent='';} $('form').reset(); $('fecha').value=localToday(); $('cantidad').value=1; $('formError').classList.add('hidden'); const pv=$('preview'); if(window._previewUrl){ URL.revokeObjectURL(window._previewUrl); window._previewUrl=null; } pv.removeAttribute('src'); pv.classList.add('hidden'); $('ocrText').value=''; $('ocrDetails').classList.add('hidden'); const st=$('ocrStatus'); st.classList.add('hidden'); st.className='hidden'; st.removeAttribute('style'); $('ocrProgWrap').classList.add('hidden'); $('scanError').classList.add('hidden'); }
 function askBorrarTodo(){
   if(!data.length) return toast(T('noPurchases'));
   $('resetConfirm').classList.remove('hidden');
@@ -599,13 +617,25 @@ function exportCSV(){
 }
 $('form').addEventListener('submit', function(e){
   e.preventDefault();
-  const item={ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
-    fecha:$('fecha').value, suplidor:$('suplidor').value.trim(), categoria:$('categoria').value,
+  const val={ fecha:$('fecha').value, suplidor:$('suplidor').value.trim(), categoria:$('categoria').value,
     producto:$('producto').value.trim(), cantidad:Number($('cantidad').value||1), costo:Number($('costo').value||0),
     recibo:$('recibo').value.trim() };
   const err=$('formError');
-  if(!item.fecha||!item.suplidor||!item.producto||!(item.costo>0)||!(item.cantidad>0)){ err.textContent=T('formError'); err.classList.remove('hidden'); return; }
+  if(!val.fecha||!val.suplidor||!val.producto||!(val.costo>0)||!(val.cantidad>0)){ err.textContent=T('formError'); err.classList.remove('hidden'); return; }
   err.classList.add('hidden');
+  if(typeof editandoId!=='undefined' && editandoId){
+    const ix=data.findIndex(function(x){ return String(x.id)===String(editandoId); });
+    if(ix>=0){
+      const keep={ id:data[ix].id }; if(data[ix].fijo) keep.fijo=data[ix].fijo;
+      data[ix]=Object.assign(keep, val);
+      if(!save()) return;
+      const mkE=val.fecha.slice(0,7);
+      cancelarEdicion(true); limpiar(); setMonth(mkE); goTab('history'); toast(T('purchaseUpdated'));
+      return;
+    }
+    cancelarEdicion(true);
+  }
+  const item=Object.assign({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6) }, val);
   data.unshift(item); if(!save()){ data.shift(); return; } setMonth(item.fecha.slice(0,7)); limpiar(); goTab('summary'); toast(T('purchaseSaved'));
 });
 $('monthSummary').addEventListener('change', function(){ setMonth(this.value||localToday().slice(0,7)); deleteId=null; render(); });
@@ -1016,6 +1046,7 @@ function aplicarRecibo(texto, p, d, opciones){
     } else { $('desgloseWrap').classList.add('hidden'); }
   }catch(eDes){}
   try{ const avS=$('desgloseAvisoSobre'); if(avS){ const totD2=Object.keys(d.porCat||{}).reduce(function(sm,c){ return sm+Number(d.porCat[c]||0); },0); if(p.costo && totD2 > p.costo*1.15) avS.classList.remove('hidden'); else avS.classList.add('hidden'); } }catch(eSobre){}
+  try{ const dupA=$('dupReciboAviso'); if(dupA){ const rec=(p.recibo||'').trim(); let dup=null; if(rec && rec.length>=4 && Array.isArray(data)){ for(let ix2=0; ix2<data.length; ix2++){ const xx=data[ix2]; if(xx && (xx.recibo||'').trim()===rec && String(xx.id)!==String((typeof editandoId!=='undefined'&&editandoId)||'')){ dup=xx; break; } } } if(dup){ dupA.textContent='⚠️ '+T('dupWarnPre')+' '+rec+' '+T('dupWarnMid')+' '+formatDate(dup.fecha)+' ('+fmt(dup.costo)+'). '+T('dupWarnPost'); dupA.classList.remove('hidden'); } else dupA.classList.add('hidden'); } }catch(eDup){}
   if(p.fecha) $('fecha').value = p.fecha;
   if(p.suplidor) $('suplidor').value = p.suplidor;
   if(p.costo) $('costo').value = Number(p.costo).toFixed(2);
@@ -1461,5 +1492,211 @@ nav.bottom .nav-btn{ font-size:11px; }
 body.tema-claro,body.tema-oscuro{ padding-bottom:184px; }
 .btn-mini{ min-height:38px; padding:6px 14px; border-radius:12px; border:1px solid var(--glass-brd); background:var(--glass); color:var(--text); font-weight:700; font-size:13.5px; cursor:pointer; }
 </style>
+
+<script>
+/* === Funciones v17: respaldo, edición, duplicados, importar CSV, atajos === */
+var editandoId = null;
+var RESPALDO_KEYS = ['gastos_hogar_v1','gastos_presupuestos_v1','gastos_fijos_v1','gastos_items_v1','gastos_tema','gastos_idioma'];
+function construirRespaldo(){
+  var datos = {};
+  RESPALDO_KEYS.forEach(function(k){ try{ datos[k] = localStorage.getItem(k); }catch(e){ datos[k] = null; } });
+  return JSON.stringify({app:'SnapSpend', tipo:'respaldo', version:1, cuando:new Date().toISOString(), datos:datos}, null, 2);
+}
+function descargarRespaldo(){
+  var blob = new Blob([construirRespaldo()], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'snapspend-respaldo-' + localToday() + '.json';
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  toast(T('backupSaved'));
+}
+function esRespaldoValido(obj){
+  return !!(obj && obj.app === 'SnapSpend' && obj.datos && typeof obj.datos === 'object' && ('gastos_hogar_v1' in obj.datos));
+}
+function aplicarRespaldo(obj){
+  if(!esRespaldoValido(obj)) return null;
+  var compras = 0;
+  try{ var arr = JSON.parse(obj.datos['gastos_hogar_v1'] || '[]'); if(Array.isArray(arr)) compras = arr.length; }catch(e){}
+  RESPALDO_KEYS.forEach(function(k){
+    var v = obj.datos[k];
+    try{ if(v === null || v === undefined) localStorage.removeItem(k); else localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); }catch(e){}
+  });
+  return {compras: compras};
+}
+function onRespaldoFile(input){
+  var f = input.files && input.files[0];
+  try{ input.value = ''; }catch(e){}
+  if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    var obj = null;
+    try{ obj = JSON.parse(String(r.result || '')); }catch(e){}
+    if(!esRespaldoValido(obj)){ toast(T('backupBad')); return; }
+    if(!confirm(T('backupReplaceQ'))) return;
+    var res = aplicarRespaldo(obj);
+    if(!res){ toast(T('backupBad')); return; }
+    try{ sessionStorage.setItem('snapRespaldoOk', '1'); }catch(e){}
+    location.reload();
+  };
+  r.readAsText(f);
+}
+/* --- Importar CSV --- */
+function parseCSV(texto){
+  var t = String(texto || '').replace(/^\ufeff/, '');
+  var primera = t.split(/\r?\n/)[0] || '';
+  var delim = ';';
+  var comas = (primera.match(/,/g) || []).length, puntos = (primera.match(/;/g) || []).length;
+  if(comas > puntos) delim = ',';
+  var filas = [], fila = [], campo = '', enComillas = false;
+  for(var i = 0; i < t.length; i++){
+    var ch = t[i];
+    if(enComillas){
+      if(ch === '"'){ if(t[i + 1] === '"'){ campo += '"'; i++; } else enComillas = false; }
+      else campo += ch;
+    } else if(ch === '"'){ enComillas = true; }
+    else if(ch === delim){ fila.push(campo); campo = ''; }
+    else if(ch === '\n'){ fila.push(campo); campo = ''; filas.push(fila); fila = []; }
+    else if(ch !== '\r'){ campo += ch; }
+  }
+  fila.push(campo); filas.push(fila);
+  return filas.filter(function(f){ return f.length > 1 || (f[0] && String(f[0]).trim()); });
+}
+function mapearColumnas(celdas){
+  var map = {fecha:-1, costo:-1, suplidor:-1, categoria:-1, producto:-1, cantidad:-1, recibo:-1};
+  celdas.forEach(function(c, ix){
+    var n = normCat(c || '').replace(/[^a-z0-9]/g, '');
+    if(!n) return;
+    if(map.fecha < 0 && /fecha|date/.test(n)) map.fecha = ix;
+    else if(map.costo < 0 && /costo|monto|total|amount|precio|importe|cargo/.test(n)) map.costo = ix;
+    else if(map.suplidor < 0 && /suplidor|tienda|store|comercio|merchant|nombre/.test(n)) map.suplidor = ix;
+    else if(map.categoria < 0 && /categor/.test(n)) map.categoria = ix;
+    else if(map.producto < 0 && /producto|descrip|concepto|detalle|item|articulo/.test(n)) map.producto = ix;
+    else if(map.cantidad < 0 && /cantidad|qty|cant/.test(n)) map.cantidad = ix;
+    else if(map.recibo < 0 && /recibo|receipt|transac|referencia|orden/.test(n)) map.recibo = ix;
+  });
+  return map;
+}
+function normFechaCSV(s){
+  s = String(s || '').trim();
+  var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+  m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if(m){
+    var a = Number(m[1]), b = Number(m[2]), y = m[3].length === 2 ? '20' + m[3] : m[3];
+    var dd, mm;
+    if(a > 12){ dd = a; mm = b; } else { mm = a; dd = b; }
+    if(mm < 1 || mm > 12 || dd < 1 || dd > 31) return '';
+    return y + '-' + String(mm).padStart(2, '0') + '-' + String(dd).padStart(2, '0');
+  }
+  return '';
+}
+function parseMontoCSV(s){
+  s = String(s || '').trim().replace(/\$/g, '').replace(/\s/g, '');
+  var neg = false;
+  if(/^\(.*\)$/.test(s)){ neg = true; s = s.slice(1, -1); }
+  if(s.indexOf(',') >= 0 && s.indexOf('.') >= 0) s = s.replace(/,/g, '');
+  else if(/,\d{2}$/.test(s) && s.indexOf('.') < 0) s = s.replace(',', '.');
+  var v = parseFloat(s);
+  if(isNaN(v)) return 0;
+  return neg ? -v : v;
+}
+function canonCategoriaCSV(c){
+  c = String(c || '').trim();
+  if(CATS7.indexOf(c) >= 0) return c;
+  var en = {'food':'Alimentos','protein':'Proteínas','cleaning':'Limpieza','hygiene':'Higiene','drinks':'Bebidas','home':'Hogar','other':'Otros','others':'Otros','proteinas':'Proteínas'};
+  return en[normCat(c)] || 'Otros';
+}
+function claveCompra(x){
+  return (x.fecha || '') + '|' + normCat(x.suplidor || '') + '|' + Number(x.costo || 0).toFixed(2) + '|' + normCat(x.producto || '');
+}
+function importarCSVTexto(texto){
+  var filas = parseCSV(texto);
+  if(!filas.length) return {ok:0, dup:0, mal:0};
+  var hi = -1, map = null;
+  for(var i = 0; i < Math.min(filas.length, 6); i++){
+    var m2 = mapearColumnas(filas[i]);
+    if(m2.fecha >= 0 && m2.costo >= 0){ hi = i; map = m2; break; }
+  }
+  if(hi < 0) return {ok:0, dup:0, mal:filas.length};
+  var vistos = {};
+  data.forEach(function(x){ vistos[claveCompra(x)] = true; });
+  var ok = 0, dup = 0, mal = 0, nuevos = [];
+  for(var j = hi + 1; j < filas.length; j++){
+    var f = filas[j];
+    if(!f || f.every(function(c){ return !String(c).trim(); })) continue;
+    var fecha = normFechaCSV(f[map.fecha]);
+    var costo = parseMontoCSV(f[map.costo]);
+    if(!fecha || !(costo !== 0)){ mal++; continue; }
+    costo = Math.abs(Math.round(costo * 100) / 100);
+    var suplidor = map.suplidor >= 0 ? String(f[map.suplidor] || '').trim() : '';
+    if(!suplidor) suplidor = '—';
+    var producto = map.producto >= 0 ? String(f[map.producto] || '').trim() : '';
+    if(!producto) producto = suplidor;
+    var categoria = map.categoria >= 0 ? canonCategoriaCSV(f[map.categoria]) : 'Otros';
+    var cantidad = map.cantidad >= 0 ? (Number(String(f[map.cantidad]).replace(',', '.')) || 1) : 1;
+    var recibo = map.recibo >= 0 ? String(f[map.recibo] || '').trim() : '';
+    var item = {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7) + j, fecha: fecha, suplidor: suplidor.slice(0, 60), categoria: categoria, producto: producto.slice(0, 80), cantidad: cantidad, costo: costo, recibo: recibo};
+    var cl = claveCompra(item);
+    if(vistos[cl]){ dup++; continue; }
+    vistos[cl] = true; nuevos.push(item); ok++;
+  }
+  if(nuevos.length){ data = nuevos.concat(data); save(); render(); }
+  return {ok: ok, dup: dup, mal: mal};
+}
+function onCSVFile(input){
+  var f = input.files && input.files[0];
+  try{ input.value = ''; }catch(e){}
+  if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    var res = importarCSVTexto(String(r.result || ''));
+    if(!res.ok && !res.dup){ toast(T('csvImpNone')); return; }
+    var msg = T('csvImpDone') + ': ' + res.ok;
+    if(res.dup) msg += ' · ' + res.dup + ' ' + T('csvImpDup');
+    if(res.mal) msg += ' · ' + res.mal + ' ' + T('csvImpBad');
+    toast(msg);
+  };
+  r.readAsText(f);
+}
+/* --- Edición de compras --- */
+function iniciarEdicion(id){
+  var x = null;
+  for(var i = 0; i < data.length; i++){ if(String(data[i].id) === String(id)){ x = data[i]; break; } }
+  if(!x) return;
+  editandoId = x.id;
+  $('fecha').value = x.fecha || localToday();
+  $('suplidor').value = x.suplidor || '';
+  $('categoria').value = x.categoria || 'Otros';
+  $('producto').value = x.producto || '';
+  $('cantidad').value = x.cantidad || 1;
+  $('costo').value = x.costo || '';
+  $('recibo').value = x.recibo || '';
+  $('editandoNombre').textContent = x.producto || '';
+  $('editandoBar').classList.remove('hidden');
+  var b = $('btnGuardarCompra'); if(b) b.textContent = T('saveChanges');
+  goTab('add');
+  try{ $('form').scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){}
+}
+function cancelarEdicion(silencioso){
+  editandoId = null;
+  var bar = $('editandoBar'); if(bar) bar.classList.add('hidden');
+  var b = $('btnGuardarCompra'); if(b) b.textContent = T('savePurchase');
+  if(!silencioso) limpiar();
+}
+/* --- Arranque: atajos del icono y aviso de respaldo restaurado --- */
+(function(){
+  try{
+    var q = new URLSearchParams(location.search);
+    var acc = q.get('accion');
+    if(acc === 'escanear' || acc === 'anadir'){
+      goTab('add');
+      if(acc === 'escanear'){ setTimeout(function(){ var bc = $('btnCamera'); if(bc) bc.click(); }, 700); }
+      else { setTimeout(function(){ var p = $('producto'); if(p) p.focus(); }, 500); }
+    }
+    if(sessionStorage.getItem('snapRespaldoOk')){ sessionStorage.removeItem('snapRespaldoOk'); setTimeout(function(){ toast(T('backupRestored')); }, 600); }
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
