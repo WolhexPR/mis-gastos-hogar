@@ -699,6 +699,7 @@ var CAT_DICT = {
   '\\batun\\b','\\bsardina','\\bchicharro','\\bjamon\\b','\\bsalchicha',
   '\\bpepperoni\\b','\\btocino\\b','\\bbacon\\b','\\bchorizo\\b','\\blonganiza\\b',
   '\\bembutido','\\bsnack','\\bpapita','\\bchip\\b','\\bpopcorn\\b','\\bpalomita',
+  '\\bdoritos','\\btostitos','\\bcheetos','\\bfritos','\\bnacho','\\bcheese\\b','\\bpringles','\\blays\\b',
   '\\bchocolate\\b','\\bdulce\\b','\\bcaramelo','\\bmenta\\b','\\bchicle\\b',
   '\\bhelado\\b','\\bflan\\b','\\bbizcocho\\b','\\bdeli\\b','\\bpanaderia\\b',
   '\\bfruta','\\bmanzana','\\bguineo','\\bchina\\b','\\bnaranja','\\btoronja',
@@ -744,7 +745,7 @@ var CAT_DICT = {
 ],
 'Bebidas': [
   '\\bagua\\b','\\bsoda\\b','\\brefresco\\b','\\bcoca\\b','\\bpepsi\\b',
-  '\\bsprite\\b','\\bmalta\\b','\\bcerveza\\b','\\bmedalla\\b','\\bvino\\b',
+  '\\bcoca','\\bcola','\\bfanta','\\bsunkist','\\bsprite\\b','\\bmalta\\b','\\bcerveza\\b','\\bmedalla\\b','\\bvino\\b',
   '\\bron\\b','\\bwhisky\\b','\\bvodka\\b','\\bjugo\\b','\\bnectar\\b',
   '\\blimonada\\b','\\bcafe\\b','\\bcocoa\\b','\\bgatorade\\b','\\bpowerade\\b',
   '\\benergy\\b','\\bmonster\\b','\\bred bull\\b','\\bsangria\\b','\\bsidra\\b',
@@ -797,7 +798,7 @@ function sugerirCategoria(texto){
 /* NIVEL 2 — desglose línea por línea.
  * Líneas de encabezado/totales/impuestos/pago se ignoran.
  * Precio al final de la línea: "DESCRIPCION 4.28" o "2/3.00". */
-var SKIP_LINE = /sub\s*-?\s*total|\btotal\b|ahorr|descuento|\bdesc\b|vuelto|cambio|efectivo|\bcash\b|balance|ivu\b|tax\b|impuesto|cup[oó]n|visa|master\s*card|debito|credito|gracias|thank|bienvenido|telefono|\btel\b|direccion|horario|cajero|transaccion|\border\b|articulo|cantidad|descripcion/i;
+var SKIP_LINE = /sub\s*-?\s*total|\bt?otal\b|ahorr|descuento|\bdesc\b|vuelto|cambio|efectivo|\bcash\b|balance|ivu\b|tax\b|impuesto|estatal|statal|municip|reducid|educid|cup[oó]n|visa|master\s*card|debito|credito|gracias|thank|bienvenido|telefono|\btel\b|direccion|horario|cajero|transaccion|\border\b|articulo|cantidad|descripcion/i;
 function extraerPrecio(linea){
   var m = linea.match(/(\d+)\s*\/\s*(\d+\.\d{2})\s*$/);
   if(m) return parseFloat(m[2]);
@@ -860,12 +861,17 @@ function totalDesdeLineas(lines){
     const esTot = !esSub && /(^|[^a-záéíóú])t?otal/i.test(l);
     if(esSub){ const v = montoTrasPalabra(l, /sub\s*-?\s*t?otal/i) || montoEn(l); if(v) sub = v; return; }
     if(esTot){ const v = montoTrasPalabra(l, /t?otal/i) || montoEn(l); if(v) totales.push(v); return; }
-    if(/ivu|impuesto|\btax\b|estatal|municipal|reducido/i.test(l)) impuestos += montoEn(l);
+    if(/ivu|impuest|\btax\b|estatal|statal|municip|reducid|educid/i.test(l)) impuestos += montoEn(l);
   });
   if(totales.length){
-    const validos = sub ? totales.filter(function(v){ return v >= sub; }) : totales;
-    const pool = validos.length ? validos : totales;
-    return Math.max.apply(null, pool);
+    if(sub){
+      const techo = Math.round(sub * 150) / 100;
+      const validos = totales.filter(function(v){ return v >= sub && v <= techo; });
+      if(validos.length) return Math.max.apply(null, validos);
+      const conImp = Math.round((sub + impuestos) * 100) / 100;
+      if(conImp >= sub && conImp <= techo) return conImp;
+    }
+    return Math.max.apply(null, totales);
   }
   if(sub) return Math.round((sub + impuestos) * 100) / 100;
   return 0;

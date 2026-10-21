@@ -4,7 +4,7 @@
    usuario: los gastos viven solo en localStorage del teléfono
    (llave gastos_hogar_v1) y este archivo no los toca. */
 
-const VERSION = 'v14';
+const VERSION = 'v15';
 const STATIC_CACHE = 'mis-gastos-static-' + VERSION;
 const RUNTIME_CACHE = 'mis-gastos-runtime-' + VERSION;
 
