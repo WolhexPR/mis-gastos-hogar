@@ -846,6 +846,39 @@ if(typeof module!=='undefined' && module.exports){
 }
 
 /* === Fin módulo categorización === */
+function esLineaPago(l){ return /cash|efectivo|cambio|vuelto|\bchange\b|tendered|recibid|ath\b|tarjeta|visa|master/i.test(l || ''); }
+function montoEn(l){ const m = (l || '').match(/(\d{1,3}(?:,\d{3})*\.\d{2}|\d+\.\d{2})/); return m ? parseFloat(m[1].replace(/,/g, '')) : 0; }
+function montoTrasPalabra(l, re){ const m = (l || '').match(re); if(!m) return 0; const resto = (l || '').slice(m.index + m[0].length); const a = resto.match(/(\d{1,3}(?:,\d{3})*\.\d{2}|\d+\.\d{2})/); return a ? parseFloat(a[1].replace(/,/g, '')) : 0; }
+/* Total de un recibo desde sus líneas: nunca de líneas de pago (Cash/Cambio),
+ * acepta "otal" sin T (el OCR a veces se la come) y si no hay total usa
+ * Sub Total + impuestos. Devuelve 0 si no encuentra nada usable. */
+function totalDesdeLineas(lines){
+  let sub = 0, impuestos = 0; const totales = [];
+  (lines || []).forEach(function(l){
+    if(esLineaPago(l)) return;
+    const esSub = /sub\s*-?\s*t?otal/i.test(l);
+    const esTot = !esSub && /(^|[^a-záéíóú])t?otal/i.test(l);
+    if(esSub){ const v = montoTrasPalabra(l, /sub\s*-?\s*t?otal/i) || montoEn(l); if(v) sub = v; return; }
+    if(esTot){ const v = montoTrasPalabra(l, /t?otal/i) || montoEn(l); if(v) totales.push(v); return; }
+    if(/ivu|impuesto|\btax\b|estatal|municipal|reducido/i.test(l)) impuestos += montoEn(l);
+  });
+  if(totales.length){
+    const validos = sub ? totales.filter(function(v){ return v >= sub; }) : totales;
+    const pool = validos.length ? validos : totales;
+    return Math.max.apply(null, pool);
+  }
+  if(sub) return Math.round((sub + impuestos) * 100) / 100;
+  return 0;
+}
+function montosFueraDePago(lines){
+  const out = [];
+  (lines || []).forEach(function(l){
+    if(esLineaPago(l)) return;
+    const re2 = /\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})|\d+\.\d{2})/g; let m2;
+    while((m2 = re2.exec(l)) !== null){ out.push(parseFloat(m2[1].replace(/,/g, ''))); }
+  });
+  return out;
+}
 function parseReceipt(text){
   const t=text||''; const lines=t.split(/\n/).map(s=>s.trim()).filter(Boolean);
   let fecha=''; const m1=t.match(/(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})|(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
@@ -854,20 +887,19 @@ function parseReceipt(text){
     else { let y=p[2]; if(y.length===2) y='20'+y; fecha=y+'-'+p[0].padStart(2,'0')+'-'+p[1].padStart(2,'0'); } }
   let costo=0; const money=[]; let mm; const re=/\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})|\d+\.\d{2})/g;
   while((mm=re.exec(t))!==null){ money.push(parseFloat(mm[1].replace(/,/g,''))); }
-  const totalLine=lines.find(l=>/total/i.test(l) && !/sub\s*total/i.test(l)) || lines.find(l=>/total/i.test(l)); let fromTotal=0;
-  if(totalLine){ const tm=totalLine.match(/(\d+\.\d{2})/); if(tm) fromTotal=parseFloat(tm[1]); }
-  costo= fromTotal || (money.length? Math.max.apply(null,money):0);
-  const known=['costco','sam','econo','pueblo','walmart','amigo','selectos','ralph','walgreens','cvs'];
+  costo = totalDesdeLineas(lines);
+  if(!costo){ const limpios = montosFueraDePago(lines); costo = limpios.length ? Math.max.apply(null, limpios) : (money.length ? Math.max.apply(null, money) : 0); }
+  const known=['costco','sam','econo','pueblo','walmart','amigo','selectos','ralph','walgreens','cvs','sunoco','texaco','shell','esso','gulf','puma'];
   let suplidor=lines.find(l=>known.some(k=>l.toLowerCase().includes(k))) || lines[0] || '';
   suplidor=suplidor.replace(/[^a-zA-ZáéíóúñÑ\s'\.]/g,'').trim().slice(0,40);
-  if(/sam/i.test(suplidor)) suplidor="Sam's Club"; else if(/costco/i.test(suplidor)) suplidor='Costco'; else if(/econo/i.test(suplidor)) suplidor='Econo'; else if(/walmart/i.test(suplidor)) suplidor='Walmart';
+  if(/sam/i.test(suplidor)) suplidor="Sam's Club"; else if(/costco/i.test(suplidor)) suplidor='Costco'; else if(/econo/i.test(suplidor)) suplidor='Econo'; else if(/walmart/i.test(suplidor)) suplidor='Walmart'; else if(/sunoco/i.test(suplidor)) suplidor='Sunoco'; else if(/texaco/i.test(suplidor)) suplidor='Texaco';
   let recibo=''; const rm=t.match(/(?:recibo|receipt|orden|order|transacci[oó]n|#)\s*[:#]?\s*([A-Z0-9\-]{4,})/i); if(rm) recibo=rm[1];
   return {fecha:fecha, suplidor:suplidor, costo:costo, recibo:recibo};
 }
 
 function tiendaCanonica(nombre){
   var t = normCat(nombre || '');
-  var known = ['costco','sams club','econo','pueblo','walmart','selectos','ralph','walgreens','cvs','amigo'];
+  var known = ['costco','sams club','econo','pueblo','walmart','selectos','ralph','walgreens','cvs','amigo','sunoco','texaco','shell','esso','gulf','puma'];
   for(var i=0;i<known.length;i++){ if(t.indexOf(known[i])>=0) return known[i]; }
   if(t.indexOf('sam')>=0) return 'sams club';
   return t.replace(/\b(wholesale|supercenter|supermercado|supermarket|club|inc|llc)\b/g,'').replace(/\s+/g,' ').trim();
@@ -918,9 +950,8 @@ function combinarRecibos(textos){
   });
   var costoTotalLinea = 0;
   lista.forEach(function(texto){
-    texto.split(/\n/).forEach(function(l){
-      if(/total/i.test(l) && !/sub\s*total/i.test(l)){ var m = l.match(/(\d+\.\d{2})/); if(m) costoTotalLinea = Math.max(costoTotalLinea, parseFloat(m[1])); }
-    });
+    var v = totalDesdeLineas(texto.split(/\n/).map(function(s){ return s.trim(); }).filter(Boolean));
+    if(v) costoTotalLinea = Math.max(costoTotalLinea, v);
   });
   var sumaDesglose = Object.keys(porCat).reduce(function(sm,c){ return sm + porCat[c]; }, 0);
   var costo = costoTotalLinea || Math.round(sumaDesglose*100)/100 || parsed.reduce(function(mx,p){ return Math.max(mx, Number(p.costo||0)); }, 0);
