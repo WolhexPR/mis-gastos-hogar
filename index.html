@@ -169,6 +169,13 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
         <input type="file" id="fileMultiCamera" accept="image/*" capture="environment" multiple class="file-hidden" tabindex="-1" aria-hidden="true">
         <input type="file" id="fileMultiGallery" accept="image/*" multiple class="file-hidden" tabindex="-1" aria-hidden="true">
         <div id="multiAviso" class="hidden" style="margin-top:12px;font-size:14px;font-weight:600;background:#fff1f2;border:1px solid var(--accent);border-radius:12px;padding:10px 12px"></div>
+        <div id="multiPend" class="hidden" style="margin-top:12px;border:1px solid var(--glass-brd);border-radius:12px;padding:12px;background:var(--glass)">
+          <div id="multiPendTxt" style="font-weight:600;font-size:14.5px"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button type="button" id="btnCombinarMulti" class="btn btn-red" style="min-height:46px;flex:1" onclick="combinarPendientes()">🧾 <span data-i18n="combineNowBtn">Combinar recibo</span></button>
+            <button type="button" id="btnCancelarMulti" class="btn btn-outline" style="min-height:46px" onclick="cancelarPendientes(false)"><span data-i18n="cancel">Cancelar</span></button>
+          </div>
+        </div>
       </div>
       <img id="preview" class="preview-img hidden" alt="Vista previa del recibo">
       <div id="ocrStatus" class="hidden"></div>
@@ -184,6 +191,7 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
         <p class="muted" style="margin:0 0 8px" data-i18n="breakdownSub">Esto es lo que distinguió la app artículo por artículo. Revísalo: tú confirmas antes de guardar.</p>
         <div id="desgloseList"></div>
         <p id="desgloseAviso" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px;margin-top:8px" data-i18n="breakdownWarn">Pude leer pocas líneas — revisa los montos.</p>
+        <p id="desgloseAvisoSobre" class="hidden" style="color:var(--danger);font-weight:600;font-size:14px;margin-top:8px" data-i18n="breakdownOverWarn">⚠️ Ojo: el desglose suma MÁS que el total que leí del recibo. Revisa los artículos antes de guardar.</p>
         <button type="button" id="btnGuardarDesglose" class="btn btn-black" style="margin-top:10px">Guardar como N compras</button>
         <p class="muted small" style="margin-top:8px" data-i18n="breakdownNote">Al guardar el desglose se crea una compra por cada categoría, con la misma fecha, suplidor y número de recibo. Cada una se verá por separado en el Historial y en el CSV.</p>
       </div>
@@ -239,6 +247,7 @@ nav.bottom .inner{max-width:448px;margin:0 auto;display:grid;grid-template-colum
       <select id="fijoCategoria" class="field" style="margin-top:6px"><option>Alimentos</option><option>Proteínas</option><option>Limpieza</option><option>Higiene</option><option>Bebidas</option><option>Hogar</option><option>Otros</option></select>
       <p id="fijoError" class="hidden" role="alert" style="color:var(--danger);font-weight:600;margin:10px 0 0"></p>
       <button class="btn btn-red" type="submit" style="margin-top:14px" data-i18n="fixedAdd">＋ Añadir gasto fijo</button>
+      <p class="muted small" style="margin:10px 0 0" data-i18n="fixedStartNote">Los cargos empiezan en el próximo vencimiento: la app no añade meses que ya pasaron.</p>
     </form>
     <div id="fijosBox" style="margin-top:20px"></div>
   </section>
@@ -294,7 +303,7 @@ es: {
   navSummary:'Resumen', navAdd:'Añadir', navHistory:'Historial', navFixed:'Fijos', navPrices:'Precios', brandTag:'Tu dinero, en orden', catLabel:'Categoría',
   budgetsBtn:'Presupuestos', budgetsTitle:'Presupuesto mensual por categoría', budgetsSub:'Pon un límite por categoría y la app te avisa al llegar al 80% y si te pasas. Deja en 0 o vacío para no usarlo.', saveBudgetsBtn:'Guardar presupuestos', budgetsSaved:'Presupuestos guardados', budgetWord:'Presupuesto', budgetOf:'de', budgetNear:'cerca del límite', budgetOverShort:'¡pasado!',
   fixedEyebrow:'Cada mes, sin falta', fixedH1:'Gastos fijos', fixedSub:'Renta, luz, internet, suscripciones… Se añaden solos el día que tocan cada mes, y en el Resumen te aviso cuando uno está por vencer.', fixedName:'Nombre', fixedNamePh:'Ej. Renta, Internet, Luz', fixedAmount:'Monto $', fixedDay:'Día del mes (1-31)', fixedAdd:'＋ Añadir gasto fijo', fixedFormError:'Escribe el nombre y un monto mayor que 0.', fixedSaved:'Gasto fijo guardado', fixedDeleted:'Gasto fijo eliminado', fixedStore:'Gasto fijo', fixedEmptyTitle:'No tienes gastos fijos todavía', fixedEmptySub:'Añade el primero arriba: la renta, el plan del teléfono, lo que pagas cada mes.', dueDayWord:'Día', ofEachMonth:'de cada mes', nextDue:'próximo', appliedThisMonth:'ya aplicado este mes', dueToday:'¡vence hoy!', dueTomorrow:'vence mañana', dueInPre:'vence en ', dueInDays:'días', upcomingTitle:'Próximos vencimientos', pauseBtn:'Pausar', resumeBtn:'Reanudar', pausedWord:'pausado',
-  pricesEyebrow:'Compara y ahorra', pricesH1:'Precios por tienda', pricesSub:'Con los artículos de tus recibos escaneados y tus compras registradas, aquí ves en qué tienda te salió más barato cada producto.', pricesSearchPh:'Buscar producto (ej. leche)', pricesEmptyTitle:'Todavía no hay productos para comparar', pricesEmptySub:'Cuando escanees recibos (el desglose guarda los artículos) o registres el mismo producto en dos tiendas distintas, la comparación aparece aquí sola.', pricesNoMatchTitle:'Sin resultados', pricesNoMatchSub:'Ningún producto comparado coincide con esa búsqueda.', youSave:'Ahorras', temaClaro:'Claro', temaOscuro:'Oscuro',
+  pricesEyebrow:'Compara y ahorra', pricesH1:'Precios por tienda', pricesSub:'Con los artículos de tus recibos escaneados y tus compras registradas, aquí ves en qué tienda te salió más barato cada producto.', pricesSearchPh:'Buscar producto (ej. leche)', pricesEmptyTitle:'Todavía no hay productos para comparar', pricesEmptySub:'Cuando escanees recibos (el desglose guarda los artículos) o registres el mismo producto en dos tiendas distintas, la comparación aparece aquí sola.', pricesNoMatchTitle:'Sin resultados', pricesNoMatchSub:'Ningún producto comparado coincide con esa búsqueda.', youSave:'Ahorras', pendPre:'🧾 Tienes ', pendOne:' foto leída', pendMany:' fotos leídas', pendPost:' de este recibo. Añade las que falten con los botones de varias fotos y, cuando estén todas, pulsa Combinar.', combineNowBtn:'Combinar recibo', pendFull:'Ya tienes 3 fotos para este recibo: pulsa Combinar, o cancela para empezar de nuevo.', photoAddedToast:'Foto añadida', multiCancelled:'Fotos descartadas', breakdownOverWarn:'⚠️ Ojo: el desglose suma MÁS que el total que leí del recibo. Revisa los artículos antes de guardar.', fixedStartNote:'Los cargos empiezan en el próximo vencimiento: la app no añade meses que ya pasaron.', temaClaro:'Claro', temaOscuro:'Oscuro',
   spentIn:'Gastado en ', purchaseOne:' compra', purchaseMany:' compras', catOne:' categoría', catMany:' categorías',
   noExpensesTitle:'Aún no hay gastos este mes', noExpensesSub:'Registra tu primera compra para ver el desglose.',
   addPurchase:'Añadir compra', recentEmpty:'Tus compras aparecerán aquí.',
@@ -372,7 +381,7 @@ en: {
   navSummary:'Summary', navAdd:'Add', navHistory:'History', navFixed:'Fixed', navPrices:'Prices', brandTag:'Your money, in order', catLabel:'Category',
   budgetsBtn:'Budgets', budgetsTitle:'Monthly budget by category', budgetsSub:'Set a limit per category and the app warns you at 80% and if you go over. Leave 0 or empty to skip a category.', saveBudgetsBtn:'Save budgets', budgetsSaved:'Budgets saved', budgetWord:'Budget', budgetOf:'of', budgetNear:'close to the limit', budgetOverShort:'over!',
   fixedEyebrow:'Every month, no fail', fixedH1:'Fixed expenses', fixedSub:'Rent, power, internet, subscriptions… They are added automatically on their day each month, and the Summary warns you when one is coming due.', fixedName:'Name', fixedNamePh:'E.g. Rent, Internet, Power', fixedAmount:'Amount $', fixedDay:'Day of month (1-31)', fixedAdd:'+ Add fixed expense', fixedFormError:'Enter a name and an amount over 0.', fixedSaved:'Fixed expense saved', fixedDeleted:'Fixed expense deleted', fixedStore:'Fixed expense', fixedEmptyTitle:'No fixed expenses yet', fixedEmptySub:'Add the first one above: rent, phone plan, whatever you pay every month.', dueDayWord:'Day', ofEachMonth:'of each month', nextDue:'next', appliedThisMonth:'applied this month', dueToday:'due today!', dueTomorrow:'due tomorrow', dueInPre:'due in ', dueInDays:'days', upcomingTitle:'Coming due', pauseBtn:'Pause', resumeBtn:'Resume', pausedWord:'paused',
-  pricesEyebrow:'Compare and save', pricesH1:'Prices by store', pricesSub:'From the items on your scanned receipts and your logged purchases, here you see which store gave you the best price for each product.', pricesSearchPh:'Search product (e.g. milk)', pricesEmptyTitle:'No products to compare yet', pricesEmptySub:'Once you scan receipts (the breakdown saves the items) or log the same product at two different stores, the comparison shows up here on its own.', pricesNoMatchTitle:'No results', pricesNoMatchSub:'No compared product matches that search.', youSave:'You save', temaClaro:'Light', temaOscuro:'Dark',
+  pricesEyebrow:'Compare and save', pricesH1:'Prices by store', pricesSub:'From the items on your scanned receipts and your logged purchases, here you see which store gave you the best price for each product.', pricesSearchPh:'Search product (e.g. milk)', pricesEmptyTitle:'No products to compare yet', pricesEmptySub:'Once you scan receipts (the breakdown saves the items) or log the same product at two different stores, the comparison shows up here on its own.', pricesNoMatchTitle:'No results', pricesNoMatchSub:'No compared product matches that search.', youSave:'You save', pendPre:'🧾 You have ', pendOne:' photo read', pendMany:' photos read', pendPost:' for this receipt. Add the missing ones with the multi-photo buttons and, when all are in, tap Combine.', combineNowBtn:'Combine receipt', pendFull:'You already have 3 photos for this receipt: tap Combine, or cancel to start over.', photoAddedToast:'Photo added', multiCancelled:'Photos discarded', breakdownOverWarn:'⚠️ Heads up: the breakdown adds up to MORE than the receipt total I read. Check the items before saving.', fixedStartNote:'Charges start at the next due date: the app never adds months that already passed.', temaClaro:'Light', temaOscuro:'Dark',
   spentIn:'Spent in ', purchaseOne:' purchase', purchaseMany:' purchases', catOne:' category', catMany:' categories',
   noExpensesTitle:'No expenses yet this month', noExpensesSub:'Add your first purchase to see the breakdown.',
   addPurchase:'Add purchase', recentEmpty:'Your purchases will appear here.',
@@ -566,7 +575,7 @@ function cancelDelete(){ deleteId=null; render(); }
 function confirmDelete(id){ data=data.filter(x=>String(x.id)!==String(id)); deleteId=null; if(save()) toast(T('purchaseDeleted')); render(); }
 </script>
 <script>
-function limpiar(){ window._lastDesglose=null; window._lastMulti=null; if(typeof limpiarMultiAviso==='function') limpiarMultiAviso(); const dw=$('desgloseWrap'); if(dw) dw.classList.add('hidden'); const sg=$('sugerenciaCat'); if(sg){sg.classList.add('hidden'); sg.textContent='';} $('form').reset(); $('fecha').value=localToday(); $('cantidad').value=1; $('formError').classList.add('hidden'); const pv=$('preview'); if(window._previewUrl){ URL.revokeObjectURL(window._previewUrl); window._previewUrl=null; } pv.removeAttribute('src'); pv.classList.add('hidden'); $('ocrText').value=''; $('ocrDetails').classList.add('hidden'); const st=$('ocrStatus'); st.classList.add('hidden'); st.className='hidden'; st.removeAttribute('style'); $('ocrProgWrap').classList.add('hidden'); $('scanError').classList.add('hidden'); }
+function limpiar(){ window._lastDesglose=null; window._lastMulti=null; if(typeof limpiarMultiAviso==='function') limpiarMultiAviso(); const dw=$('desgloseWrap'); if(dw) dw.classList.add('hidden'); const avSo=$('desgloseAvisoSobre'); if(avSo) avSo.classList.add('hidden'); if(typeof cancelarPendientes==='function') cancelarPendientes(true); const sg=$('sugerenciaCat'); if(sg){sg.classList.add('hidden'); sg.textContent='';} $('form').reset(); $('fecha').value=localToday(); $('cantidad').value=1; $('formError').classList.add('hidden'); const pv=$('preview'); if(window._previewUrl){ URL.revokeObjectURL(window._previewUrl); window._previewUrl=null; } pv.removeAttribute('src'); pv.classList.add('hidden'); $('ocrText').value=''; $('ocrDetails').classList.add('hidden'); const st=$('ocrStatus'); st.classList.add('hidden'); st.className='hidden'; st.removeAttribute('style'); $('ocrProgWrap').classList.add('hidden'); $('scanError').classList.add('hidden'); }
 function askBorrarTodo(){
   if(!data.length) return toast(T('noPurchases'));
   $('resetConfirm').classList.remove('hidden');
@@ -635,13 +644,14 @@ function savePresupuestos(){ const out={}; CATS7.forEach(function(c){ const inp=
 /* --- Gastos fijos --- */
 function procesarFijos(){ const hoy=localToday(); const mkHoy=hoy.slice(0,7); let changed=false; (fijos||[]).forEach(function(f){ if(!f.activo) return; const meses=mesesEntre(f.ultimoMes||'', mkHoy); meses.forEach(function(mk){ const p=mk.split('-'); const fdate=fechaDe(Number(p[0]), Number(p[1]), Number(f.dia||1)); if(fdate<=hoy){ data.unshift({id:'fijo'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), fecha:fdate, suplidor:T('fixedStore'), categoria:f.categoria, producto:f.nombre, cantidad:1, costo:Number(f.monto||0), recibo:'', fijo:f.id}); f.ultimoMes=mk; changed=true; } }); }); if(changed){ save(); saveJSON(KEY_F, fijos); } }
 function prevMkDe(mk){ const p=mk.split('-'); let y=Number(p[0]), m=Number(p[1])-1; if(m<1){ m=12; y--; } return y+'-'+String(m).padStart(2,'0'); }
-function addFijo(e){ e.preventDefault(); const nombre=$('fijoNombre').value.trim(); const monto=Number($('fijoMonto').value||0); const dia=Math.min(31, Math.max(1, parseInt($('fijoDia').value||'1',10)||1)); const categoria=$('fijoCategoria').value; const err=$('fijoError'); if(!nombre||!(monto>0)){ err.textContent=T('fixedFormError'); err.classList.remove('hidden'); return; } err.classList.add('hidden'); const f={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:nombre, monto:Math.round(monto*100)/100, categoria:categoria, dia:dia, activo:true, ultimoMes:prevMkDe(localToday().slice(0,7))}; fijos.push(f); saveJSON(KEY_F, fijos); try{ procesarFijos(); }catch(e2){} $('formFijo').reset(); renderFijos(); render(); toast(T('fixedSaved')); }
+function mkInicioFijo(dia){ const hoy=localToday(); const mkHoy=hoy.slice(0,7); const dd=Number(hoy.slice(8,10)); return (Number(dia)<=dd) ? mkHoy : prevMkDe(mkHoy); }
+function addFijo(e){ e.preventDefault(); const nombre=$('fijoNombre').value.trim(); const monto=Number($('fijoMonto').value||0); const dia=Math.min(31, Math.max(1, parseInt($('fijoDia').value||'1',10)||1)); const categoria=$('fijoCategoria').value; const err=$('fijoError'); if(!nombre||!(monto>0)){ err.textContent=T('fixedFormError'); err.classList.remove('hidden'); return; } err.classList.add('hidden'); const f={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:nombre, monto:Math.round(monto*100)/100, categoria:categoria, dia:dia, activo:true, ultimoMes:mkInicioFijo(dia)}; fijos.push(f); saveJSON(KEY_F, fijos); try{ procesarFijos(); }catch(e2){} $('formFijo').reset(); renderFijos(); render(); toast(T('fixedSaved')); }
 let fijoDelId=null;
 function askDelFijo(id){ fijoDelId=id; renderFijos(); }
 function cancelDelFijo(){ fijoDelId=null; renderFijos(); }
 function confirmDelFijo(id){ fijos=fijos.filter(function(x){ return x.id!==id; }); fijoDelId=null; saveJSON(KEY_F, fijos); renderFijos(); toast(T('fixedDeleted')); }
-function toggleFijo(id){ const f=fijos.find(function(x){ return x.id===id; }); if(!f) return; f.activo=!f.activo; if(f.activo){ const prev=prevMkDe(localToday().slice(0,7)); if((f.ultimoMes||'')<prev) f.ultimoMes=prev; } saveJSON(KEY_F, fijos); try{ procesarFijos(); }catch(e){} renderFijos(); render(); }
-function renderFijos(){ const box=$('fijosBox'); if(!box) return; const hoy=localToday(); const mkHoy=hoy.slice(0,7); if(!fijos.length){ box.innerHTML='<div class="paper"><p class="empty-title">'+T('fixedEmptyTitle')+'</p><p class="muted">'+T('fixedEmptySub')+'</p></div>'; return; } box.innerHTML=fijos.map(function(f){ const pv=f.activo?proximoVencimiento(f, hoy):null; const aplicado=f.ultimoMes===mkHoy; let sub=T('dueDayWord')+' '+f.dia+' '+T('ofEachMonth'); if(!f.activo) sub+=' · '+T('pausedWord'); else if(aplicado) sub+=' · ✓ '+T('appliedThisMonth'); else if(pv) sub+=' · '+T('nextDue')+': '+formatDate(pv.fecha); let h='<article class="fijo-card"><div style="display:flex;justify-content:space-between;gap:12px"><div style="min-width:0"><div style="font-weight:700">'+esc(f.nombre)+'</div><div class="muted small" style="margin-top:3px">'+sub+'</div><div style="margin-top:9px"><span class="pill">'+esc(catName(f.categoria))+'</span></div></div><div class="mono" style="font-weight:700;font-size:17px;flex-shrink:0">'+fmt(f.monto)+'</div></div>'; h+='<div class="fijo-actions"><button class="btn-mini" onclick="toggleFijo(\''+f.id+'\')">'+(f.activo?T('pauseBtn'):T('resumeBtn'))+'</button><button class="btn-mini" style="color:var(--danger)" onclick="askDelFijo(\''+f.id+'\')">'+T('deleteBtn')+'</button></div>'; if(fijoDelId===f.id){ h+='<div class="confirm-box"><span style="font-weight:600;font-size:14px">'+T('askDeleteQ')+'</span><span class="actions"><button class="btn-cancel" onclick="cancelDelFijo()">'+T('cancel')+'</button><button class="btn-confirm-del" onclick="confirmDelFijo(\''+f.id+'\')">'+T('yesDelete')+'</button></span></div>'; } return h+'</article>'; }).join(''); }
+function toggleFijo(id){ const f=fijos.find(function(x){ return x.id===id; }); if(!f) return; f.activo=!f.activo; if(f.activo){ const iniF=mkInicioFijo(f.dia); if((f.ultimoMes||'')<iniF) f.ultimoMes=iniF; } saveJSON(KEY_F, fijos); try{ procesarFijos(); }catch(e){} renderFijos(); render(); }
+function renderFijos(){ const box=$('fijosBox'); if(!box) return; const hoy=localToday(); const mkHoy=hoy.slice(0,7); if(!fijos.length){ box.innerHTML='<div class="paper"><p class="empty-title">'+T('fixedEmptyTitle')+'</p><p class="muted">'+T('fixedEmptySub')+'</p></div>'; return; } box.innerHTML=fijos.map(function(f){ const pv=f.activo?proximoVencimiento(f, hoy):null; const aplicado=(data||[]).some(function(x){ return x.fijo===f.id && (x.fecha||'').slice(0,7)===mkHoy; }); let sub=T('dueDayWord')+' '+f.dia+' '+T('ofEachMonth'); if(!f.activo) sub+=' · '+T('pausedWord'); else if(aplicado) sub+=' · ✓ '+T('appliedThisMonth'); else if(pv) sub+=' · '+T('nextDue')+': '+formatDate(pv.fecha); let h='<article class="fijo-card"><div style="display:flex;justify-content:space-between;gap:12px"><div style="min-width:0"><div style="font-weight:700">'+esc(f.nombre)+'</div><div class="muted small" style="margin-top:3px">'+sub+'</div><div style="margin-top:9px"><span class="pill">'+esc(catName(f.categoria))+'</span></div></div><div class="mono" style="font-weight:700;font-size:17px;flex-shrink:0">'+fmt(f.monto)+'</div></div>'; h+='<div class="fijo-actions"><button class="btn-mini" onclick="toggleFijo(\''+f.id+'\')">'+(f.activo?T('pauseBtn'):T('resumeBtn'))+'</button><button class="btn-mini" style="color:var(--danger)" onclick="askDelFijo(\''+f.id+'\')">'+T('deleteBtn')+'</button></div>'; if(fijoDelId===f.id){ h+='<div class="confirm-box"><span style="font-weight:600;font-size:14px">'+T('askDeleteQ')+'</span><span class="actions"><button class="btn-cancel" onclick="cancelDelFijo()">'+T('cancel')+'</button><button class="btn-confirm-del" onclick="confirmDelFijo(\''+f.id+'\')">'+T('yesDelete')+'</button></span></div>'; } return h+'</article>'; }).join(''); }
 function renderFijosAlert(){ const el=$('fijosAlert'); if(!el) return; const hoy=localToday(); const ups=[]; (fijos||[]).forEach(function(f){ if(!f.activo) return; const pv=proximoVencimiento(f, hoy); if(pv && pv.dias<=5) ups.push({f:f, pv:pv}); }); if(!ups.length){ el.innerHTML=''; el.className='hidden'; return; } ups.sort(function(a,b){ return a.pv.dias-b.pv.dias; }); el.className='alert-banner ab-info'; el.innerHTML='<div style="font-weight:700">🔔 '+T('upcomingTitle')+'</div>'+ups.map(function(u){ return '<div>'+esc(u.f.nombre)+' · '+fmt(u.f.monto)+' · '+(u.pv.dias===0?T('dueToday'):u.pv.dias===1?T('dueTomorrow'):T('dueInPre')+u.pv.dias+' '+T('dueInDays'))+' ('+formatDate(u.pv.fecha)+')</div>'; }).join(''); }
 
 /* --- Comparador de precios --- */
@@ -787,7 +797,7 @@ function sugerirCategoria(texto){
 /* NIVEL 2 — desglose línea por línea.
  * Líneas de encabezado/totales/impuestos/pago se ignoran.
  * Precio al final de la línea: "DESCRIPCION 4.28" o "2/3.00". */
-var SKIP_LINE = /sub\s*total|^total\b|ivu\b|tax\b|impuesto|cambio|efectivo|visa|master\s*card|debito|credito|gracias|thank|bienvenido|telefono|\btel\b|direccion|horario|cajero|transaccion|\border\b|articulo|cantidad|descripcion/i;
+var SKIP_LINE = /sub\s*-?\s*total|\btotal\b|ahorr|descuento|\bdesc\b|vuelto|cambio|efectivo|\bcash\b|balance|ivu\b|tax\b|impuesto|cup[oó]n|visa|master\s*card|debito|credito|gracias|thank|bienvenido|telefono|\btel\b|direccion|horario|cajero|transaccion|\border\b|articulo|cantidad|descripcion/i;
 function extraerPrecio(linea){
   var m = linea.match(/(\d+)\s*\/\s*(\d+\.\d{2})\s*$/);
   if(m) return parseFloat(m[2]);
@@ -957,6 +967,7 @@ function aplicarRecibo(texto, p, d, opciones){
       $('desgloseWrap').classList.remove('hidden');
     } else { $('desgloseWrap').classList.add('hidden'); }
   }catch(eDes){}
+  try{ const avS=$('desgloseAvisoSobre'); if(avS){ const totD2=Object.keys(d.porCat||{}).reduce(function(sm,c){ return sm+Number(d.porCat[c]||0); },0); if(p.costo && totD2 > p.costo*1.15) avS.classList.remove('hidden'); else avS.classList.add('hidden'); } }catch(eSobre){}
   if(p.fecha) $('fecha').value = p.fecha;
   if(p.suplidor) $('suplidor').value = p.suplidor;
   if(p.costo) $('costo').value = Number(p.costo).toFixed(2);
@@ -1060,6 +1071,65 @@ async function handleFile(file){
     ocrBusy=false; setOcrButtons(false);
   }
 }
+async function leerTextosDeFotos(usar, status, bar){
+  if(typeof Tesseract === 'undefined'){
+    status.textContent = T('loadingReader');
+    await loadTesseractOnce();
+  }
+  if(typeof Tesseract === 'undefined'){
+    throw new Error(T('readerFail'));
+  }
+  const textos = [];
+  for(let i = 0; i < usar.length; i++){
+    status.textContent = T('readingPhotoPre')+(i+1)+T('readingPhotoMid')+usar.length+T('readingPhotoPost');
+    let input = usar[i];
+    try{ input = await prepareForOCR(usar[i]); }
+    catch(decodeErr){
+      if(isHeic(usar[i])) throw new Error(T('heicMultiPre')+(i+1)+T('heicMultiPost'));
+      throw new Error(T('openFailMultiPre')+(i+1)+T('openFailMultiPost'));
+    }
+    const res = await Tesseract.recognize(input, 'eng+spa', { logger: function(m){ if(m.status === 'recognizing text'){ const base = (i + m.progress)/usar.length; bar.style.width = Math.round(5 + base*95)+'%'; } } });
+    textos.push((res.data && res.data.text) || '');
+  }
+  return textos;
+}
+function procesarTextosMulti(textos, avisoExtra){
+  const status = $('ocrStatus'), progWrap = $('ocrProgWrap'), err = $('scanError');
+  $('ocrText').value = textos.map(function(t, i){ return '--- '+T('photoWord')+' '+(i+1)+' ---\n'+t; }).join('\n\n');
+  $('ocrDetails').classList.remove('hidden');
+  // PRIMERO verificar: mismo recibo. Si no, no se combina nada.
+  const comb = combinarRecibos(textos);
+  window._lastMulti = comb;
+  if(!comb.ok){
+    window._lastDesglose = null;
+    $('desgloseWrap').classList.add('hidden');
+    const sgx = $('sugerenciaCat'); if(sgx) sgx.classList.add('hidden');
+    status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
+    if(comb.motivo === 'números de recibo distintos'){
+      err.textContent = T('mismatchNumPre')+comb.recibos.join(T('andWord'))+T('mismatchNumPost')+textos.length+T('mismatchEnd');
+    } else {
+      err.textContent = T('mismatchStorePre')+comb.tiendas.join(T('andWord'))+T('mismatchStorePost')+textos.length+T('mismatchEnd');
+    }
+    err.classList.remove('hidden');
+    return;
+  }
+  // Avisos del combinado
+  const avisos = [];
+  avisos.push(T('combinedPre')+comb.numFotos+T('combinedMid')+(comb.tienda || T('storeUnknown')));
+  if(comb.duplicadas > 0) avisos.push('♻️ '+comb.duplicadas+(comb.duplicadas === 1 ? T('dupOne') : T('dupMany'))+T('dupPost'));
+  else avisos.push(T('noDups'));
+  if(comb.fotosSinTienda > 0) avisos.push(T('noStorePre')+comb.fotosSinTienda+T('noStorePost'));
+  if(avisoExtra) avisos.push(avisoExtra);
+  const ma = $('multiAviso');
+  ma.innerHTML = avisos.map(function(a){ return '<div>'+esc(a)+'</div>'; }).join('');
+  ma.classList.remove('hidden');
+  const p = {fecha:comb.fecha, suplidor:comb.suplidor, costo:comb.costo, recibo:comb.recibo};
+  const d = {porCat:comb.porCat, lineas:comb.lineas, sinPrecio:comb.sinPrecio};
+  aplicarRecibo(comb.textoCombinado, p, d, {
+    estadoFinal: T('multiDetectedPre')+comb.numFotos+T('multiDetectedPost'),
+    toastFinal: T('multiToastPre')+comb.numFotos+T('multiToastPost')
+  });
+}
 async function handleFiles(fileList){
   const files = Array.prototype.slice.call(fileList || []);
   if(!files.length) return;
@@ -1083,59 +1153,61 @@ async function handleFiles(fileList){
   window._previewUrl = URL.createObjectURL(usar[0]); prev.src = window._previewUrl; prev.classList.remove('hidden');
   prev.onerror = function(){ prev.classList.add('hidden'); };
   try{
-    if(typeof Tesseract === 'undefined'){
-      status.textContent = T('loadingReader');
-      await loadTesseractOnce();
-    }
-    if(typeof Tesseract === 'undefined'){
-      throw new Error(T('readerFail'));
-    }
-    const textos = [];
-    for(let i = 0; i < usar.length; i++){
-      status.textContent = T('readingPhotoPre')+(i+1)+T('readingPhotoMid')+usar.length+T('readingPhotoPost');
-      let input = usar[i];
-      try{ input = await prepareForOCR(usar[i]); }
-      catch(decodeErr){
-        if(isHeic(usar[i])) throw new Error(T('heicMultiPre')+(i+1)+T('heicMultiPost'));
-        throw new Error(T('openFailMultiPre')+(i+1)+T('openFailMultiPost'));
-      }
-      const res = await Tesseract.recognize(input, 'eng+spa', { logger: function(m){ if(m.status === 'recognizing text'){ const base = (i + m.progress)/usar.length; bar.style.width = Math.round(5 + base*95)+'%'; } } });
-      textos.push((res.data && res.data.text) || '');
-    }
-    $('ocrText').value = textos.map(function(t, i){ return '--- '+T('photoWord')+' '+(i+1)+' ---\n'+t; }).join('\n\n');
-    $('ocrDetails').classList.remove('hidden');
-    // PRIMERO verificar: mismo recibo. Si no, no se combina nada.
-    const comb = combinarRecibos(textos);
-    window._lastMulti = comb;
-    if(!comb.ok){
-      window._lastDesglose = null;
-      $('desgloseWrap').classList.add('hidden');
-      const sgx = $('sugerenciaCat'); if(sgx) sgx.classList.add('hidden');
-      status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
-      if(comb.motivo === 'números de recibo distintos'){
-        err.textContent = T('mismatchNumPre')+comb.recibos.join(T('andWord'))+T('mismatchNumPost')+usar.length+T('mismatchEnd');
-      } else {
-        err.textContent = T('mismatchStorePre')+comb.tiendas.join(T('andWord'))+T('mismatchStorePost')+usar.length+T('mismatchEnd');
-      }
-      err.classList.remove('hidden');
-      return;
-    }
-    // Avisos del combinado
-    const avisos = [];
-    avisos.push(T('combinedPre')+comb.numFotos+T('combinedMid')+(comb.tienda || T('storeUnknown')));
-    if(comb.duplicadas > 0) avisos.push('♻️ '+comb.duplicadas+(comb.duplicadas === 1 ? T('dupOne') : T('dupMany'))+T('dupPost'));
-    else avisos.push(T('noDups'));
-    if(comb.fotosSinTienda > 0) avisos.push(T('noStorePre')+comb.fotosSinTienda+T('noStorePost'));
-    if(avisoExtra) avisos.push(avisoExtra);
-    const ma = $('multiAviso');
-    ma.innerHTML = avisos.map(function(a){ return '<div>'+esc(a)+'</div>'; }).join('');
-    ma.classList.remove('hidden');
-    const p = {fecha:comb.fecha, suplidor:comb.suplidor, costo:comb.costo, recibo:comb.recibo};
-    const d = {porCat:comb.porCat, lineas:comb.lineas, sinPrecio:comb.sinPrecio};
-    aplicarRecibo(comb.textoCombinado, p, d, {
-      estadoFinal: T('multiDetectedPre')+comb.numFotos+T('multiDetectedPost'),
-      toastFinal: T('multiToastPre')+comb.numFotos+T('multiToastPost')
-    });
+    const textos = await leerTextosDeFotos(usar, status, bar);
+    procesarTextosMulti(textos, avisoExtra);
+  }catch(e){
+    status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
+    err.textContent = T('readPhotosFailPre')+(e && e.message ? e.message : T('readFailFallback'));
+    err.classList.remove('hidden');
+  }finally{
+    ocrBusy = false; setOcrButtons(false);
+  }
+}
+/* Varias fotos ACUMULABLES: la cámara devuelve una foto por toque, así que
+   cada foto leída se guarda y el usuario combina cuando las tiene todas. */
+let multiPendientes = [];
+function mostrarMultiPend(){
+  const p = $('multiPend'); if(!p) return;
+  if(!multiPendientes.length){ p.classList.add('hidden'); return; }
+  const n = multiPendientes.length;
+  $('multiPendTxt').textContent = T('pendPre')+n+(n === 1 ? T('pendOne') : T('pendMany'))+T('pendPost');
+  p.classList.remove('hidden');
+}
+function combinarPendientes(){
+  if(!multiPendientes.length) return;
+  const textos = multiPendientes.slice();
+  multiPendientes = [];
+  mostrarMultiPend();
+  limpiarMultiAviso();
+  procesarTextosMulti(textos, '');
+}
+function cancelarPendientes(silencioso){
+  multiPendientes = [];
+  mostrarMultiPend();
+  if(!silencioso) toast(T('multiCancelled'));
+}
+async function agregarFotosMulti(fileList){
+  const files = Array.prototype.slice.call(fileList || []);
+  if(!files.length) return;
+  const status = $('ocrStatus'), progWrap = $('ocrProgWrap'), bar = $('ocrBar'), err = $('scanError');
+  if(ocrBusy){ err.textContent = T('waitPrev'); err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  if(multiPendientes.length >= 3){ err.textContent = T('pendFull'); err.classList.remove('hidden'); return; }
+  const usar = files.slice(0, 3 - multiPendientes.length);
+  if(usar.some(function(f){ return f.size > 20*1024*1024; })){
+    err.textContent = T('onePhotoTooBig');
+    err.classList.remove('hidden'); return;
+  }
+  ocrBusy = true; setOcrButtons(true);
+  status.classList.remove('hidden'); status.className = 'pulse'; status.removeAttribute('style');
+  status.textContent = T('readingPhotos');
+  progWrap.classList.remove('hidden'); bar.style.width = '5%';
+  try{
+    const textos = await leerTextosDeFotos(usar, status, bar);
+    textos.forEach(function(t){ multiPendientes.push(t); });
+    status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
+    mostrarMultiPend();
+    toast(T('photoAddedToast'));
   }catch(e){
     status.classList.add('hidden'); status.className = 'hidden'; progWrap.classList.add('hidden');
     err.textContent = T('readPhotosFailPre')+(e && e.message ? e.message : T('readFailFallback'));
@@ -1157,7 +1229,7 @@ function onMultiPicked(e){
   const input = e.target;
   const files = input.files;
   try{ input.value = ''; }catch(err){}
-  if(files && files.length) handleFiles(files);
+  if(files && files.length) agregarFotosMulti(files);
 }
 /* Cableado de los botones de escaneo: botón -> input file oculto -> handleFile.
    input.click() debe ocurrir de forma síncrona dentro del gesto del usuario
